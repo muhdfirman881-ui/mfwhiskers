@@ -1515,6 +1515,37 @@ function addNote(){
   if(!text)return alert('Please write a note!');
   pet.notes.unshift({text,date});closeModal('addNote');renderHealth();saveState();
 }
+  /* ═══════════════════════════════════════
+   LOGIN & LOGOUT LOGIC
+═══════════════════════════════════════ */
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const errorMsg = document.getElementById('loginError');
+
+  // Simple demo authentication (change these as needed!)
+  if (user === 'admin' && pass === 'password') {
+    // Hide the login screen on success
+    document.getElementById('loginScreen').style.display = 'none';
+    errorMsg.classList.remove('show');
+  } else {
+    // Show error and trigger the shake animation
+    errorMsg.classList.add('show');
+    
+    // Remove the class after the animation finishes so it can shake again next time
+    setTimeout(() => {
+      errorMsg.classList.remove('show');
+    }, 400);
+  }
+}
+
+function doLogout() {
+  // Show the login screen again and clear the inputs
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
 </script>
 </body>
 </html>
