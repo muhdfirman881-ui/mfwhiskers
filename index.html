@@ -19,8 +19,12 @@
     --radius:24px;--radius-sm:16px;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  
   body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#FFE8F7 0%,#EDE8FF 30%,#E8F8FF 60%,#E8FFE8 100%);min-height:100vh;color:var(--text-dark);}
+
+  /* Loading overlay */
+  #loadingOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#FFE8F7,#EDE8FF,#E8F8FF);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+  #loadingOverlay .spin-cat{font-size:64px;animation:bounce 1s ease-in-out infinite;}
+  #loadingOverlay p{font-family:'Fredoka One',cursive;font-size:20px;color:var(--text-dark);}
 
   header{background:linear-gradient(135deg,#FF6B9D,#C77DFF,#4FC3F7);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(100,60,200,0.3);}
   .logo{font-family:'Fredoka One',cursive;font-size:30px;color:white;display:flex;align-items:center;gap:10px;text-shadow:2px 2px 0 rgba(0,0,0,0.12);}
@@ -33,15 +37,12 @@
   .btn-del-pet:hover{background:rgba(255,80,80,0.3);border-color:white;}
 
   .container{max-width:1200px;margin:0 auto;padding:28px 24px;}
-
   .tabs{display:flex;gap:6px;background:white;padding:7px;border-radius:50px;box-shadow:var(--shadow);margin-bottom:26px;overflow-x:auto;}
   .tab{flex:1;padding:9px 16px;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:var(--text-medium);transition:all 0.25s;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;}
   .tab.active{background:linear-gradient(135deg,var(--pink),var(--lavender));color:white;box-shadow:0 4px 14px rgba(199,125,255,0.4);}
   .tab:not(.active):hover{background:var(--pink-light);color:var(--pink);}
-
   .section-title{font-family:'Fredoka One',cursive;font-size:24px;color:var(--text-dark);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
 
-  /* PET SELECTOR */
   .pet-selector{display:flex;gap:14px;margin-bottom:26px;overflow-x:auto;padding-bottom:8px;}
   .pet-card{background:white;border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:var(--shadow);transition:all 0.25s;border:3px solid transparent;min-width:190px;position:relative;}
   .pet-card.active{border-color:var(--pink);background:var(--pink-light);}
@@ -59,7 +60,6 @@
   .panel{display:none;}.panel.active{display:block;}
   .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;}
   .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;}
-
   .card{background:white;border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);}
   .card-title{font-family:'Fredoka One',cursive;font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
 
@@ -101,7 +101,6 @@
   .deworm-dot.done{background:var(--mint);box-shadow:0 0 0 2px var(--mint);}
   .deworm-dot.next{background:var(--yellow);box-shadow:0 0 0 2px var(--coral);}
 
-  /* GALLERY */
   .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;}
   .gallery-item{border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1;cursor:pointer;box-shadow:var(--shadow);transition:all 0.25s;position:relative;display:flex;align-items:center;justify-content:center;font-size:56px;}
   .gallery-item:hover{transform:scale(1.05);box-shadow:var(--shadow-hover);}
@@ -112,7 +111,6 @@
   .gallery-add{border-radius:var(--radius-sm);aspect-ratio:1;border:3px dashed var(--lavender);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;color:var(--lavender);font-weight:800;font-size:12px;transition:all 0.2s;background:var(--lavender-light);}
   .gallery-add:hover{transform:scale(1.05);}
 
-  /* FOOD */
   .food-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;}
   .food-card{background:white;border-radius:var(--radius);padding:0;overflow:hidden;box-shadow:var(--shadow);transition:all 0.25s;position:relative;}
   .food-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover);}
@@ -166,12 +164,10 @@
   .floaty{position:absolute;font-size:22px;opacity:0.07;animation:floatUp linear infinite;}
   @keyframes floatUp{0%{transform:translateY(100vh) rotate(0deg);opacity:0.07}100%{transform:translateY(-120px) rotate(360deg);opacity:0}}
 
-  /* Star picker in modal */
   .star-picker{display:flex;gap:6px;margin:8px 0;}
   .star-pick{font-size:28px;cursor:pointer;transition:transform 0.15s;color:#DDD;}
   .star-pick:hover,.star-pick.on{color:#FFD93D;transform:scale(1.2);}
 
-  /* Confirm delete overlay */
   .confirm-bar{background:linear-gradient(135deg,#FF6B9D,#FF4757);color:white;border-radius:var(--radius);padding:16px 22px;display:none;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;box-shadow:0 4px 16px rgba(255,71,87,0.35);}
   .confirm-bar.open{display:flex;}
   .confirm-bar span{font-weight:700;font-size:14px;}
@@ -184,6 +180,13 @@
 </style>
 </head>
 <body>
+
+<!-- Loading overlay shown until Firebase data is ready -->
+<div id="loadingOverlay">
+  <div class="spin-cat">😺</div>
+  <p>Loading your pets...</p>
+</div>
+
 <div class="floaties" id="floaties"></div>
 
 <header>
@@ -197,8 +200,6 @@
 </header>
 
 <div class="container">
-
-  <!-- Delete confirm bar -->
   <div class="confirm-bar" id="confirmBar">
     <span id="confirmMsg">Delete this pet?</span>
     <div class="confirm-btns">
@@ -207,10 +208,8 @@
     </div>
   </div>
 
-  <!-- PET SELECTOR -->
   <div class="pet-selector" id="petSelector"></div>
 
-  <!-- TABS -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('overview')" id="tab-overview">🏠 Overview</button>
     <button class="tab" onclick="switchTab('vaccines')" id="tab-vaccines">💉 Vaccines</button>
@@ -223,23 +222,23 @@
   <!-- OVERVIEW -->
   <div class="panel active" id="panel-overview">
     <div class="deco-banner">
-      <div class="text"><h2 id="greetPet">Hey Mochi! 🐶</h2><p id="greetSub">All looking good today! 🌟</p></div>
+      <div class="text"><h2 id="greetPet">Hey there! 🐾</h2><p id="greetSub">All looking good today! 🌟</p></div>
       <div class="emojis"><span class="spin">🌟</span><span>🐾</span></div>
     </div>
     <div class="grid-3" style="margin-bottom:22px;">
-      <div class="overview-stat"><div class="emoji">💉</div><div class="num" id="vaxCount" style="color:var(--pink)">4</div><div class="label">Vaccines Done</div></div>
-      <div class="overview-stat"><div class="emoji">🪱</div><div class="num" id="dewormCount" style="color:var(--lavender)">3</div><div class="label">Dewormings</div></div>
-      <div class="overview-stat"><div class="emoji">📸</div><div class="num" id="galleryCount" style="color:var(--sky)">6</div><div class="label">Photos</div></div>
-      <div class="overview-stat"><div class="emoji">⚖️</div><div class="num" id="petWeight" style="color:var(--coral)">5.2</div><div class="label">Weight (kg)</div></div>
-      <div class="overview-stat"><div class="emoji">🎂</div><div class="num" id="petAge" style="color:var(--mint)">2y</div><div class="label">Age</div></div>
+      <div class="overview-stat"><div class="emoji">💉</div><div class="num" id="vaxCount" style="color:var(--pink)">0</div><div class="label">Vaccines Done</div></div>
+      <div class="overview-stat"><div class="emoji">🪱</div><div class="num" id="dewormCount" style="color:var(--lavender)">0</div><div class="label">Dewormings</div></div>
+      <div class="overview-stat"><div class="emoji">📸</div><div class="num" id="galleryCount" style="color:var(--sky)">0</div><div class="label">Photos</div></div>
+      <div class="overview-stat"><div class="emoji">⚖️</div><div class="num" id="petWeight" style="color:var(--coral)">—</div><div class="label">Weight (kg)</div></div>
+      <div class="overview-stat"><div class="emoji">🎂</div><div class="num" id="petAge" style="color:var(--mint)">—</div><div class="label">Age</div></div>
       <div class="overview-stat"><div class="emoji">🍽️</div><div class="num" id="foodCount" style="color:var(--yellow)">0</div><div class="label">Foods Rated</div></div>
     </div>
     <div class="grid-2">
       <div class="card">
         <div class="card-title" style="color:var(--pink)">💉 Vaccine Coverage</div>
         <div class="progress-wrap"><div class="progress-label"><span>Rabies</span><span>100%</span></div><div class="progress-bar"><div class="progress-fill fill-pink" style="width:100%"></div></div></div>
-        <div class="progress-wrap"><div class="progress-label"><span>Core Vaccines</span><span id="coreVaxPct">75%</span></div><div class="progress-bar"><div class="progress-fill fill-mint" id="coreVaxBar" style="width:75%"></div></div></div>
-        <div class="progress-wrap"><div class="progress-label"><span>Overall</span><span id="overallVaxPct">60%</span></div><div class="progress-bar"><div class="progress-fill fill-yellow" id="overallVaxBar" style="width:60%"></div></div></div>
+        <div class="progress-wrap"><div class="progress-label"><span>Core Vaccines</span><span id="coreVaxPct">0%</span></div><div class="progress-bar"><div class="progress-fill fill-mint" id="coreVaxBar" style="width:0%"></div></div></div>
+        <div class="progress-wrap"><div class="progress-label"><span>Overall</span><span id="overallVaxPct">0%</span></div><div class="progress-bar"><div class="progress-fill fill-yellow" id="overallVaxBar" style="width:0%"></div></div></div>
       </div>
       <div class="card">
         <div class="card-title" style="color:var(--lavender)">📅 Upcoming Reminders</div>
@@ -326,12 +325,9 @@
       <div id="vetInfo"></div>
     </div>
   </div>
-
 </div>
 
-<!-- ============ MODALS ============ -->
-
-<!-- ADD PET -->
+<!-- MODALS -->
 <div class="modal-bg" id="modal-addPet">
   <div class="modal">
     <div class="modal-title">🐾 Add New Pet</div>
@@ -339,28 +335,18 @@
     <div class="form-row">
       <label>Species</label>
       <select id="newPetSpecies" onchange="updateBreedOptions()">
-        <option value="cat">🐱 Cat</option>
-        <option value="dog">🐶 Dog</option>
-        <option value="rabbit">🐰 Rabbit</option>
-        <option value="bird">🐦 Bird</option>
-        <option value="hamster">🐹 Hamster</option>
-        <option value="fish">🐠 Fish</option>
-        <option value="turtle">🐢 Turtle</option>
-        <option value="other">🐾 Other</option>
+        <option value="cat">🐱 Cat</option><option value="dog">🐶 Dog</option>
+        <option value="rabbit">🐰 Rabbit</option><option value="bird">🐦 Bird</option>
+        <option value="hamster">🐹 Hamster</option><option value="fish">🐠 Fish</option>
+        <option value="turtle">🐢 Turtle</option><option value="other">🐾 Other</option>
       </select>
     </div>
-    <div class="form-row">
-      <label>Breed</label>
-      <select id="newPetBreed"></select>
-    </div>
+    <div class="form-row"><label>Breed</label><select id="newPetBreed"></select></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="form-row"><label>Birthday</label><input type="date" id="newPetBday"></div>
       <div class="form-row"><label>Weight (kg)</label><input type="number" id="newPetWeight" placeholder="4.5" step="0.1"></div>
     </div>
-    <div class="form-row">
-      <label>Gender</label>
-      <select id="newPetGender"><option value="female">♀ Female</option><option value="male">♂ Male</option></select>
-    </div>
+    <div class="form-row"><label>Gender</label><select id="newPetGender"><option value="female">♀ Female</option><option value="male">♂ Male</option></select></div>
     <div class="modal-actions">
       <button class="btn btn-danger" onclick="closeModal('addPet')">Cancel</button>
       <button class="btn btn-primary" onclick="addPet()">🐾 Add Pet!</button>
@@ -368,7 +354,6 @@
   </div>
 </div>
 
-<!-- ADD VACCINE -->
 <div class="modal-bg" id="modal-addVaccine">
   <div class="modal">
     <div class="modal-title">💉 Add Vaccine</div>
@@ -394,7 +379,6 @@
   </div>
 </div>
 
-<!-- ADD DEWORM -->
 <div class="modal-bg" id="modal-addDeworm">
   <div class="modal">
     <div class="modal-title">🪱 Add Deworming</div>
@@ -418,7 +402,6 @@
   </div>
 </div>
 
-<!-- ADD PHOTO -->
 <div class="modal-bg" id="modal-addPhoto">
   <div class="modal">
     <div class="modal-title">📸 Add Photo Memory</div>
@@ -435,7 +418,6 @@
   </div>
 </div>
 
-<!-- ADD FOOD -->
 <div class="modal-bg" id="modal-addFood">
   <div class="modal">
     <div class="modal-title">🍽️ Add Food Review</div>
@@ -467,7 +449,6 @@
   </div>
 </div>
 
-<!-- PROFILE PIC -->
 <div class="modal-bg" id="modal-profilePic">
   <div class="modal">
     <div class="modal-title">📷 Set Profile Picture</div>
@@ -482,7 +463,6 @@
   </div>
 </div>
 
-<!-- WEIGHT -->
 <div class="modal-bg" id="modal-addWeight">
   <div class="modal">
     <div class="modal-title">⚖️ Log Weight</div>
@@ -496,7 +476,6 @@
   </div>
 </div>
 
-<!-- NOTE -->
 <div class="modal-bg" id="modal-addNote">
   <div class="modal">
     <div class="modal-title">📝 Health Note</div>
@@ -512,60 +491,9 @@
 <input type="file" id="hiddenAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
 
 <script>
-(async () => {
-  try {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-    const { getDatabase, ref, set, get } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAurrTWfEXRcXZ2pBmsNkpB8716-13xBp8",
-      authDomain: "mfwhiskers-14946.firebaseapp.com",
-      databaseURL: "https://mfwhiskers-14946-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "mfwhiskers-14946",
-      storageBucket: "mfwhiskers-14946.firebasestorage.app",
-      messagingSenderId: "984533711194",
-      appId: "1:984533711194:web:b77cbb0b962e1fc4031b63"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    window.db = getDatabase(app);
-
-    console.log("Firebase connected");
-
-    // Function to save state to database
-    window.saveState = async function() {
-      try {
-        await set(ref(window.db, 'pets'), state);
-        console.log("State saved to database");
-      } catch (error) {
-        console.error("Error saving state:", error);
-      }
-    };
-
-    // Function to load state from database
-    window.loadState = async function() {
-      try {
-        const snapshot = await get(ref(window.db, 'pets'));
-        if (snapshot.exists()) {
-          state = snapshot.val();
-          console.log("State loaded from database");
-        } else {
-          console.log("No data in database, using default state");
-        }
-      } catch (error) {
-        console.error("Error loading state:", error);
-      }
-    };
-
-    await init();
-  } catch (error) {
-    console.error("Firebase load error:", error);
-    init(); // fallback to local
-  }
-})();
-</script>
-
-<script>
+/* =========================================================
+   HELPERS
+   ========================================================= */
 const SPECIES_EMOJI={cat:'😺',dog:'🐶',rabbit:'🐰',bird:'🐦',hamster:'🐹',fish:'🐠',turtle:'🐢',other:'🐾'};
 const BG_COLORS=['linear-gradient(135deg,#FFD6E7,#FFC4E6)','linear-gradient(135deg,#D4F5D7,#B8EDD0)','linear-gradient(135deg,#D0EFFF,#C3E8FF)','linear-gradient(135deg,#EDD9FF,#E0CAFF)','linear-gradient(135deg,#FFF3B0,#FFE88A)','linear-gradient(135deg,#FFE3D8,#FFD1C0)'];
 
@@ -575,24 +503,48 @@ const RABBIT_BREEDS=['Holland Lop','Mini Rex','Netherland Dwarf','Lionhead','Rex
 const BIRD_BREEDS=['Budgerigar (Budgie)','Cockatiel','African Grey Parrot','Lovebird','Macaw','Conure','Canary','Finch','Cockatoo','Eclectus'];
 const GENERIC_BREEDS=['Mixed / Unknown','Other'];
 
-function getBreedsForSpecies(sp){
-  return {cat:CAT_BREEDS,dog:DOG_BREEDS,rabbit:RABBIT_BREEDS,bird:BIRD_BREEDS}[sp]||GENERIC_BREEDS;
-}
-
+function getBreedsForSpecies(sp){return {cat:CAT_BREEDS,dog:DOG_BREEDS,rabbit:RABBIT_BREEDS,bird:BIRD_BREEDS}[sp]||GENERIC_BREEDS;}
 function updateBreedOptions(){
   const sp=document.getElementById('newPetSpecies').value;
   const sel=document.getElementById('newPetBreed');
   sel.innerHTML=getBreedsForSpecies(sp).map(b=>`<option>${b}</option>`).join('');
 }
 
-let currentFoodFilter='all';
-let pendingProfilePetIdx=null;
-let pendingProfileData=null;
-let tempRating=0;
+/* =========================================================
+   FIX #1: normaliseState
+   Firebase stores arrays as objects {0:{…},1:{…},…} when
+   the array has gaps or was serialised as an object.
+   This converts every expected array field back to a real Array.
+   ========================================================= */
+function toArray(val){
+  if(!val) return [];
+  if(Array.isArray(val)) return val;
+  // Firebase object-with-numeric-keys → array
+  return Object.keys(val).sort((a,b)=>Number(a)-Number(b)).map(k=>val[k]);
+}
+function normalisePet(pet){
+  pet.vaccines   = toArray(pet.vaccines);
+  pet.dewormings = toArray(pet.dewormings);
+  pet.gallery    = toArray(pet.gallery);
+  pet.foods      = toArray(pet.foods);
+  pet.weights    = toArray(pet.weights);
+  pet.notes      = toArray(pet.notes);
+  if(!pet.vet) pet.vet={name:'',clinic:'',phone:'',email:''};
+  return pet;
+}
+function normaliseState(s){
+  if(!s) return s;
+  s.pets = toArray(s.pets).map(normalisePet);
+  if(typeof s.activePet !== 'number') s.activePet = 0;
+  return s;
+}
 
-let state={
-  activePet:0,
-  pets:[
+/* =========================================================
+   STATE  – default data only used when Firebase is empty
+   ========================================================= */
+let state = {
+  activePet: 0,
+  pets: [
     {
       id:1,name:'Mochi',species:'dog',breed:'Shih Tzu',birthday:'2022-04-15',weight:5.2,gender:'male',profilePic:null,
       vaccines:[
@@ -649,7 +601,98 @@ let state={
   ]
 };
 
-async function init(){await loadState();spawnFloaties();updateBreedOptions();renderPetSelector();renderAll();}
+/* =========================================================
+   FIX #2: saveState / loadState defined BEFORE Firebase init
+   so the fallback path can also call them safely.
+   ========================================================= */
+window.saveState = async function(){
+  if(window.db){
+    try{
+      const {ref,set}=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+      await set(ref(window.db,'pets'), state);
+    } catch(e){ console.error('Save error',e); }
+  } else {
+    // Fallback: localStorage
+    try{ localStorage.setItem('mfwhiskers_state', JSON.stringify(state)); }
+    catch(e){ console.warn('localStorage save failed',e); }
+  }
+};
+
+window.loadState = async function(){
+  if(window.db){
+    try{
+      const {ref,get}=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+      const snap=await get(ref(window.db,'pets'));
+      if(snap.exists()){
+        // FIX #3: normalise before using – Firebase returns objects not arrays
+        const loaded = normaliseState(snap.val());
+        if(loaded && loaded.pets && loaded.pets.length > 0){
+          state = loaded;
+        }
+      }
+    } catch(e){ console.error('Load error',e); }
+  } else {
+    // Fallback: localStorage
+    try{
+      const raw=localStorage.getItem('mfwhiskers_state');
+      if(raw){
+        const loaded = normaliseState(JSON.parse(raw));
+        if(loaded && loaded.pets && loaded.pets.length > 0) state = loaded;
+      }
+    } catch(e){ console.warn('localStorage load failed',e); }
+  }
+};
+
+/* =========================================================
+   FIX #4: init() defined BEFORE the Firebase IIFE runs
+   ========================================================= */
+async function init(){
+  await loadState();            // wait for data before rendering
+  spawnFloaties();
+  updateBreedOptions();
+  renderPetSelector();
+  renderAll();
+  // FIX #5: hide loading overlay AFTER first render
+  document.getElementById('loadingOverlay').style.display='none';
+}
+
+/* =========================================================
+   FIREBASE – self-executing async block
+   ========================================================= */
+(async () => {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const { getDatabase }   = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAurrTWfEXRcXZ2pBmsNkpB8716-13xBp8",
+      authDomain: "mfwhiskers-14946.firebaseapp.com",
+      databaseURL: "https://mfwhiskers-14946-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "mfwhiskers-14946",
+      storageBucket: "mfwhiskers-14946.firebasestorage.app",
+      messagingSenderId: "984533711194",
+      appId: "1:984533711194:web:b77cbb0b962e1fc4031b63"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    window.db = getDatabase(app);
+    console.log("Firebase connected ✅");
+  } catch (error) {
+    console.warn("Firebase unavailable, using localStorage fallback:", error);
+    window.db = null;
+  }
+  // Always call init() whether Firebase succeeded or not
+  await init();
+})();
+
+/* =========================================================
+   APP LOGIC (unchanged from original, but uses fixed state)
+   ========================================================= */
+let currentFoodFilter='all';
+let pendingProfilePetIdx=null;
+let pendingProfileData=null;
+let tempRating=0;
+
 function getPet(){return state.pets[state.activePet];}
 function calcAge(b){if(!b)return'?';const bd=new Date(b),n=new Date();const y=n.getFullYear()-bd.getFullYear();return y<1?(n.getMonth()-bd.getMonth()+12)%12+'mo':y+'y';}
 
@@ -667,7 +710,6 @@ function spawnFloaties(){
   }
 }
 
-// ---- PET SELECTOR ----
 function renderPetSelector(){
   const sel=document.getElementById('petSelector');
   sel.innerHTML='';
@@ -699,7 +741,6 @@ function renderPetSelector(){
 
 function selectPet(idx){state.activePet=idx;renderPetSelector();renderAll();saveState();}
 
-// ---- TABS ----
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
@@ -707,10 +748,8 @@ function switchTab(tab){
   document.getElementById('panel-'+tab).classList.add('active');
 }
 
-// ---- RENDER ALL ----
 function renderAll(){renderOverview();renderVaccines();renderDeworming();renderGallery();renderFood();renderHealth();}
 
-// ---- OVERVIEW ----
 function renderOverview(){
   const pet=getPet();
   document.getElementById('greetPet').textContent=`Hey ${pet.name}! ${SPECIES_EMOJI[pet.species]}`;
@@ -736,7 +775,6 @@ function renderOverview(){
   else{ul.innerHTML=upcoming.slice(0,4).map(item=>{const isV=item.hasOwnProperty('clinic');return`<div class="vax-row ${item.status==='overdue'?'overdue':'upcoming'}" style="cursor:default;"><span class="vax-icon">${isV?'💉':'🪱'}</span><div class="vax-name">${item.name||item.med}</div><div class="vax-date">Due: ${item.due||'—'}</div><span class="vax-status ${item.status==='overdue'?'status-overdue':'status-upcoming'}">${item.status==='overdue'?'🚨 Overdue':'⏰ Soon'}</span></div>`}).join('');}
 }
 
-// ---- VACCINES ----
 function renderVaccines(){
   const pet=getPet();
   document.getElementById('vDone').textContent=pet.vaccines.filter(v=>v.status==='done').length;
@@ -752,7 +790,6 @@ function renderVaccines(){
     </div>`).join('');
 }
 
-// ---- DEWORMING ----
 function renderDeworming(){
   const pet=getPet();
   document.getElementById('dewormList').innerHTML=pet.dewormings.map(d=>`
@@ -772,7 +809,6 @@ function renderDeworming(){
     </div>`).join('');
 }
 
-// ---- GALLERY ----
 function renderGallery(){
   const pet=getPet();
   const grid=document.getElementById('galleryGrid');
@@ -784,37 +820,33 @@ function renderGallery(){
     </div>`).join('')+`<div class="gallery-add" onclick="openModal('addPhoto')"><span style="font-size:30px;">📷</span><span>Add Photo</span></div>`;
 }
 
-// ---- FOOD ----
 function filterFood(v){currentFoodFilter=v;renderFood();}
 function renderFood(){
   const pet=getPet();
   let foods=pet.foods;
   if(currentFoodFilter!=='all') foods=foods.filter(f=>f.rating>=currentFoodFilter);
   const grid=document.getElementById('foodGrid');
-  grid.innerHTML=foods.map((f,i)=>`
-    <div class="food-card">
-      <button class="food-del" onclick="removeFood(${pet.foods.indexOf(f)})" title="Delete">🗑️</button>
+  grid.innerHTML=foods.map((f)=>{
+    const realIdx=pet.foods.indexOf(f);
+    return `<div class="food-card">
+      <button class="food-del" onclick="removeFood(${realIdx})" title="Delete">🗑️</button>
       <div class="food-img">
         ${f.imgSrc?`<img src="${f.imgSrc}" alt="${f.name}">`:`<span>${f.emoji||'🍽️'}</span>`}
       </div>
       <div class="food-body">
         <div class="food-name">${f.name}</div>
         <div class="food-brand">${f.brand} · ${f.type}</div>
-        <div class="stars">${[1,2,3,4,5].map(s=>`<span class="star ${s<=f.rating?'filled':'empty'}" onclick="updateFoodRating(${pet.foods.indexOf(f)},${s})">${s<=f.rating?'⭐':'☆'}</span>`).join('')}</div>
+        <div class="stars">${[1,2,3,4,5].map(s=>`<span class="star ${s<=f.rating?'filled':'empty'}" onclick="updateFoodRating(${realIdx},${s})">${s<=f.rating?'⭐':'☆'}</span>`).join('')}</div>
         <div class="rating-badge">⭐ ${f.rating} / 5</div>
         ${f.note?`<div class="food-note">${f.note}</div>`:''}
       </div>
-    </div>`).join('')+`<div class="food-add-card" onclick="openModal('addFood')"><span style="font-size:36px;">🍽️</span><span>Add Food Review</span></div>`;
+    </div>`;
+  }).join('')+`<div class="food-add-card" onclick="openModal('addFood')"><span style="font-size:36px;">🍽️</span><span>Add Food Review</span></div>`;
 }
 
-function updateFoodRating(idx,rating){
-  getPet().foods[idx].rating=rating;
-  renderFood();
-  saveState();
-}
+function updateFoodRating(idx,rating){getPet().foods[idx].rating=rating;renderFood();saveState();}
 function removeFood(idx){if(confirm('Remove this food?')){getPet().foods.splice(idx,1);renderFood();renderOverview();saveState();}}
 
-// ---- HEALTH ----
 function renderHealth(){
   const pet=getPet();
   document.getElementById('weightLog').innerHTML=pet.weights.slice(-5).reverse().map(w=>`
@@ -835,7 +867,6 @@ function renderHealth(){
     </div>`;
 }
 
-// ---- MODALS ----
 function openModal(id){
   document.getElementById('modal-'+id).classList.add('open');
   const today=new Date().toISOString().split('T')[0];
@@ -846,7 +877,6 @@ function openModal(id){
 function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
 document.querySelectorAll('.modal-bg').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
 
-// ---- PROFILE PIC ----
 function openProfilePicModal(idx){
   pendingProfilePetIdx=idx;pendingProfileData=null;
   const pet=state.pets[idx];
@@ -867,11 +897,9 @@ document.getElementById('profilePicFile').addEventListener('change',function(e){
 function saveProfilePic(){
   if(!pendingProfileData)return alert('Please select a photo first!');
   state.pets[pendingProfilePetIdx].profilePic=pendingProfileData;
-  closeModal('profilePic');renderPetSelector();
-  saveState();
+  closeModal('profilePic');renderPetSelector();saveState();
 }
 
-// ---- STAR PICKER ----
 function setRating(v){tempRating=v;document.getElementById('newFoodRating').value=v;updateStarPicker(v);}
 function updateStarPicker(v){
   document.querySelectorAll('.star-pick').forEach(s=>{
@@ -879,7 +907,6 @@ function updateStarPicker(v){
   });
 }
 
-// ---- ADD PET ----
 function addPet(){
   const name=document.getElementById('newPetName').value.trim();
   if(!name)return alert('Please enter a pet name!');
@@ -891,11 +918,9 @@ function addPet(){
   state.pets.push({id:Date.now(),name,species,breed,birthday,weight,gender,profilePic:null,vaccines:[],dewormings:[],gallery:[],foods:[],weights:[{val:weight,date:birthday||new Date().toISOString().split('T')[0],note:'Initial weight'}],notes:[],vet:{name:'',clinic:'',phone:'',email:''}});
   state.activePet=state.pets.length-1;
   closeModal('addPet');document.getElementById('newPetName').value='';
-  renderPetSelector();renderAll();
-  saveState();
+  renderPetSelector();renderAll();saveState();
 }
 
-// ---- DELETE PET ----
 function promptDeletePet(){
   if(state.pets.length===0)return alert('No pets to delete!');
   const pet=getPet();
@@ -909,11 +934,10 @@ function confirmDeletePet(){
   document.getElementById('confirmBar').classList.remove('open');
   renderPetSelector();
   if(state.pets.length>0){renderAll();saveState();}
-  else{document.querySelector('.container').innerHTML='<div style="text-align:center;padding:60px 20px;"><div style="font-size:64px;margin-bottom:16px;">🐾</div><div style="font-family:Fredoka One,cursive;font-size:24px;color:var(--text-dark);margin-bottom:8px;">No pets yet!</div><div style="color:var(--text-medium);margin-bottom:24px;">Add your first furry friend to get started.</div><button class="btn btn-primary" onclick="location.reload()">Start Fresh 🌟</button></div>';}
+  else{document.querySelector('.container').innerHTML='<div style="text-align:center;padding:60px 20px;"><div style="font-size:64px;margin-bottom:16px;">🐾</div><div style="font-family:\'Fredoka One\',cursive;font-size:24px;color:var(--text-dark);margin-bottom:8px;">No pets yet!</div><div style="color:var(--text-medium);margin-bottom:24px;">Add your first furry friend to get started.</div><button class="btn btn-primary" onclick="location.reload()">Start Fresh 🌟</button></div>';}
 }
 function cancelDelete(){document.getElementById('confirmBar').classList.remove('open');}
 
-// ---- VACCINE ----
 function addVaccine(){
   const pet=getPet();
   const name=document.getElementById('newVaxName').value;
@@ -925,12 +949,10 @@ function addVaccine(){
   const today=new Date().toISOString().split('T')[0];
   const status=date&&date<=today?(due&&due<today?'overdue':'done'):'upcoming';
   pet.vaccines.push({id:Date.now(),name,date,due,clinic,batch,notes,status});
-  closeModal('addVaccine');renderAll();
-  saveState();
+  closeModal('addVaccine');renderAll();saveState();
 }
 function removeVaccine(idx){if(confirm('Remove this vaccine record?')){getPet().vaccines.splice(idx,1);renderAll();saveState();}}
 
-// ---- DEWORM ----
 function addDeworm(){
   const pet=getPet();
   const med=document.getElementById('newDewormMed').value;
@@ -941,11 +963,9 @@ function addDeworm(){
   const today=new Date().toISOString().split('T')[0];
   const status=date&&date<=today?'done':'next';
   pet.dewormings.push({id:Date.now(),med,date,due,dose,notes,status});
-  closeModal('addDeworm');renderAll();
-  saveState();
+  closeModal('addDeworm');renderAll();saveState();
 }
 
-// ---- GALLERY ----
 function addPhoto(){
   const pet=getPet();
   const caption=document.getElementById('newPhotoCaption').value||'My pet!';
@@ -965,7 +985,6 @@ function addPhoto(){
 }
 function removeGallery(idx){if(confirm('Remove photo?')){getPet().gallery.splice(idx,1);renderGallery();renderOverview();saveState();}}
 
-// ---- FOOD ----
 function addFood(){
   const pet=getPet();
   const name=document.getElementById('newFoodName').value.trim();
@@ -987,7 +1006,6 @@ function addFood(){
   }
 }
 
-// ---- WEIGHT / NOTE ----
 function addWeight(){
   const pet=getPet();
   const val=parseFloat(document.getElementById('newWeightVal').value);
@@ -995,16 +1013,14 @@ function addWeight(){
   const note=document.getElementById('newWeightNote').value;
   if(!val||!date)return alert('Please fill in weight and date!');
   pet.weight=val;pet.weights.push({val,date,note});
-  closeModal('addWeight');renderAll();
-  saveState();
+  closeModal('addWeight');renderAll();saveState();
 }
 function addNote(){
   const pet=getPet();
   const text=document.getElementById('newNoteText').value.trim();
   const date=document.getElementById('newNoteDate').value;
   if(!text)return alert('Please write a note!');
-  pet.notes.unshift({text,date});closeModal('addNote');renderHealth();
-  saveState();
+  pet.notes.unshift({text,date});closeModal('addNote');renderHealth();saveState();
 }
 </script>
 </body>
