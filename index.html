@@ -396,6 +396,121 @@ header::before {
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--lavender-light);border-radius:3px;}
 
+/* ── LOGIN SCREEN ── */
+#loginScreen {
+  position:fixed;inset:0;z-index:8000;
+  display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 15%, #FFD6E7 0%, transparent 60%),
+    radial-gradient(ellipse 70% 70% at 85% 10%, #EDD9FF 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 50% 55%, #D0EFFF 0%, transparent 65%),
+    radial-gradient(ellipse 75% 60% at 8% 88%, #D4F5D7 0%, transparent 55%),
+    radial-gradient(ellipse 65% 65% at 92% 82%, #FFF3B0 0%, transparent 60%);
+  background-color:#F5EEFF;
+  animation:meshShift 18s ease-in-out infinite alternate;
+}
+.login-card {
+  background:rgba(255,255,255,0.88);
+  backdrop-filter:blur(20px);
+  border:2px solid rgba(255,255,255,0.95);
+  border-radius:32px;
+  padding:44px 40px 36px;
+  width:90%;max-width:400px;
+  box-shadow:0 24px 64px rgba(100,60,200,0.18), 0 0 0 1px rgba(199,125,255,0.1);
+  text-align:center;
+  animation:modalIn 0.5s cubic-bezier(.4,0,.2,1);
+}
+.login-mascot {
+  font-size:72px;
+  display:block;
+  margin-bottom:8px;
+  animation:pawWiggle 2.5s ease-in-out infinite;
+}
+.login-title {
+  font-family:'Pacifico',cursive;
+  font-size:30px;
+  color:var(--text-dark);
+  margin-bottom:4px;
+  background:linear-gradient(135deg,var(--pink),var(--lavender));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.login-sub {
+  font-family:'Baloo 2',cursive;
+  font-size:12px;font-weight:600;
+  color:var(--text-medium);letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:28px;display:block;
+}
+.login-field {
+  position:relative;margin-bottom:14px;text-align:left;
+}
+.login-field label {
+  font-family:'Baloo 2',cursive;font-weight:700;font-size:12px;
+  color:var(--text-medium);display:block;margin-bottom:5px;
+}
+.login-field input {
+  width:100%;padding:12px 16px 12px 42px;
+  border:2px solid rgba(199,125,255,0.25);border-radius:14px;
+  font-family:'Quicksand',sans-serif;font-size:14px;font-weight:600;
+  color:var(--text-dark);outline:none;transition:all 0.2s;
+  background:rgba(255,255,255,0.9);
+}
+.login-field input:focus{border-color:var(--lavender);background:white;box-shadow:0 0 0 4px rgba(199,125,255,0.1);}
+.login-field .field-icon {
+  position:absolute;left:13px;bottom:12px;font-size:18px;pointer-events:none;
+}
+.login-btn {
+  width:100%;padding:13px;
+  background:linear-gradient(135deg,var(--pink),var(--lavender));
+  color:white;border:none;border-radius:50px;
+  font-family:'Baloo 2',cursive;font-weight:800;font-size:15px;
+  cursor:pointer;margin-top:8px;
+  box-shadow:0 6px 24px rgba(199,125,255,0.4);
+  transition:all 0.2s;letter-spacing:0.5px;
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(199,125,255,0.5);}
+.login-btn:active{transform:translateY(0);}
+.login-error {
+  display:none;
+  background:#FFE8E8;color:#FF4757;
+  border-radius:12px;padding:9px 14px;
+  font-family:'Baloo 2',cursive;font-weight:700;font-size:13px;
+  margin-top:12px;
+  animation:shake 0.4s ease-in-out;
+}
+.login-error.show{display:block;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.login-paws {
+  display:flex;justify-content:center;gap:8px;margin-top:20px;opacity:0.25;font-size:18px;
+}
+
+/* ── HEADER USER CHIP ── */
+.user-chip {
+  background:rgba(255,255,255,0.18);color:white;
+  padding:6px 14px;border-radius:50px;
+  font-family:'Baloo 2',cursive;font-size:12px;font-weight:700;
+  backdrop-filter:blur(4px);
+  display:flex;align-items:center;gap:6px;
+}
+.logout-btn {
+  background:rgba(255,255,255,0.18);color:white;
+  border:1.5px solid rgba(255,255,255,0.4);
+  padding:6px 14px;border-radius:50px;
+  font-family:'Baloo 2',cursive;font-size:12px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;backdrop-filter:blur(4px);
+  display:flex;align-items:center;gap:6px;
+}
+.logout-btn:hover{background:rgba(255,80,80,0.3);border-color:rgba(255,255,255,0.7);}
+
+/* ── FOOD EDIT BUTTON ── */
+.food-edit {
+  position:absolute;top:8px;left:8px;
+  background:rgba(255,255,255,0.85);border:none;border-radius:50px;
+  padding:4px 8px;cursor:pointer;font-size:13px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);
+  font-family:'Baloo 2',cursive;font-weight:700;color:var(--text-medium);
+}
+.food-edit:hover{background:var(--yellow-light);color:#9A7000;}
+
 @media(max-width:600px){
   header{padding:10px 14px;}
   .logo{font-size:24px;}
@@ -406,6 +521,28 @@ header::before {
 </style>
 </head>
 <body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <span class="login-mascot">🐾</span>
+    <div class="login-title">MF Whiskers</div>
+    <span class="login-sub">✦ pet care companion ✦</span>
+    <div class="login-field">
+      <label>Username</label>
+      <span class="field-icon">🐱</span>
+      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <span class="field-icon">🔒</span>
+      <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">🌸 Sign In</button>
+    <div class="login-error" id="loginError">❌ Wrong username or password!</div>
+    <div class="login-paws">🐾 🐾 🐾 🐾 🐾</div>
+  </div>
+</div>
 
 <!-- Loading -->
 <div id="loadingOverlay">
@@ -432,9 +569,8 @@ header::before {
     <span class="logo-sub">✦ pet care companion ✦</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center;position:relative;z-index:1;">
-    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
-      <span style="background:rgba(255,255,255,0.18);color:white;padding:5px 12px;border-radius:50px;font-family:'Baloo 2',cursive;font-size:12px;font-weight:700;backdrop-filter:blur(4px);">🌸 Track · Care · Love</span>
-    </div>
+    <div class="user-chip">👋 admin</div>
+    <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
   </div>
 </header>
 
