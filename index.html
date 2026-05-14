@@ -19,6 +19,7 @@
     --radius:24px;--radius-sm:16px;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
+  
   body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#FFE8F7 0%,#EDE8FF 30%,#E8F8FF 60%,#E8FFE8 100%);min-height:100vh;color:var(--text-dark);}
 
   header{background:linear-gradient(135deg,#FF6B9D,#C77DFF,#4FC3F7);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(100,60,200,0.3);}
@@ -946,6 +947,24 @@ function addNote(){
 }
 
 init();
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_BUCKET",
+  messagingSenderId: "YOUR_ID",
+  appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+
+console.log("Firebase connected");
+
 </script>
+  
 </body>
 </html>
