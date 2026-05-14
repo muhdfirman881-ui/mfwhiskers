@@ -4,6 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MF Whiskers 🐱</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MF Whiskers">
+<meta name="theme-color" content="#C77DFF">
+<!-- iOS home screen icon (SVG → canvas → data URI via inline script below) -->
+<link id="appleIcon" rel="apple-touch-icon">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22MF%20Whiskers%22%2C%22short_name%22%3A%22Whiskers%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F5EEFF%22%2C%22theme_color%22%3A%22%23C77DFF%22%7D">
+<script>
+// Generate a cute 512×512 icon and set it as apple-touch-icon
+(function(){
+  const c=document.createElement('canvas');c.width=512;c.height=512;
+  const ctx=c.getContext('2d');
+  // gradient background
+  const g=ctx.createLinearGradient(0,0,512,512);
+  g.addColorStop(0,'#FF6B9D');g.addColorStop(0.5,'#C77DFF');g.addColorStop(1,'#6ECFFF');
+  ctx.fillStyle=g;
+  // rounded rect
+  const r=90;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(512-r,0);ctx.quadraticCurveTo(512,0,512,r);
+  ctx.lineTo(512,512-r);ctx.quadraticCurveTo(512,512,512-r,512);ctx.lineTo(r,512);
+  ctx.quadraticCurveTo(0,512,0,512-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);
+  ctx.closePath();ctx.fill();
+  // white soft circle
+  ctx.fillStyle='rgba(255,255,255,0.18)';ctx.beginPath();ctx.arc(256,220,155,0,Math.PI*2);ctx.fill();
+  // paw emoji
+  ctx.font='220px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🐾',256,240);
+  // text
+  ctx.fillStyle='white';ctx.font='bold 52px sans-serif';ctx.fillText('MF Whiskers',256,400);
+  document.getElementById('appleIcon').href=c.toDataURL('image/png');
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Baloo+2:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -569,7 +599,8 @@ header::before {
     <span class="logo-sub">✦ pet care companion ✦</span>
   </div>
   <div style="display:flex;gap:8px;align-items:center;position:relative;z-index:1;">
-    <div class="user-chip">👋 admin</div>
+    <div class="user-chip" id="headerUserChip">👋 admin</div>
+    <button class="logout-btn" id="userMgmtBtn" onclick="openUserMgmt()" style="display:none;">👥 Users</button>
     <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
   </div>
 </header>
@@ -927,9 +958,211 @@ header::before {
   </div>
 </div>
 
+<!-- EDIT FOOD -->
+<div class="modal-bg" id="modal-editFood">
+  <div class="modal">
+    <div class="modal-title">✏️ Edit Food Review</div>
+    <div class="form-row"><label>Food Name</label><input type="text" id="editFoodName" placeholder="e.g. Royal Canin Adult Indoor"></div>
+    <div class="form-row"><label>Brand</label><input type="text" id="editFoodBrand" placeholder="e.g. Royal Canin"></div>
+    <div class="form-row"><label>Type</label>
+      <select id="editFoodType">
+        <option>Dry Kibble</option><option>Wet Food</option><option>Raw Food</option>
+        <option>Freeze-Dried</option><option>Treats</option><option>Supplement</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Rating (tap stars)</label>
+      <div class="star-picker" id="editStarPicker">
+        <span class="star-pick" data-val="1" onclick="setEditRating(1)">⭐</span>
+        <span class="star-pick" data-val="2" onclick="setEditRating(2)">⭐</span>
+        <span class="star-pick" data-val="3" onclick="setEditRating(3)">⭐</span>
+        <span class="star-pick" data-val="4" onclick="setEditRating(4)">⭐</span>
+        <span class="star-pick" data-val="5" onclick="setEditRating(5)">⭐</span>
+      </div>
+      <input type="hidden" id="editFoodRating" value="0">
+    </div>
+    <div class="form-row"><label>Notes / Review</label><textarea id="editFoodNote" rows="2" placeholder="e.g. Loves this! Finishes every bowl 😻"></textarea></div>
+    <div class="form-row"><label>Change Photo (optional)</label><input type="file" id="editFoodFile" accept="image/*"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('editFood')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditFood()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MANAGEMENT (admin only) -->
+<div class="modal-bg" id="modal-userMgmt">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-title">👥 User Management</div>
+    <div style="margin-bottom:16px;">
+      <div id="userList"></div>
+    </div>
+    <div style="background:var(--lavender-light);border-radius:16px;padding:16px;margin-top:4px;">
+      <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:var(--text-dark);margin-bottom:12px;">➕ Add New User</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-row" style="margin-bottom:0;"><label>Username</label><input type="text" id="newUserName" placeholder="username"></div>
+        <div class="form-row" style="margin-bottom:0;"><label>Password</label><input type="password" id="newUserPass" placeholder="password"></div>
+      </div>
+      <div class="form-row" style="margin-top:10px;"><label>Role</label>
+        <select id="newUserRole">
+          <option value="admin">👑 Admin (full access)</option>
+          <option value="viewer">👀 Viewer (read only)</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="margin-top:4px;width:100%;justify-content:center;" onclick="addUser()">➕ Add User</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('userMgmt')">Close</button>
+    </div>
+  </div>
+</div>
+
 <input type="file" id="hiddenAvatarInput" accept="image/*" style="display:none">
 
 <script>
+/* ═══════════════════════════════════════
+   AUTH
+═══════════════════════════════════════ */
+// users stored in Firebase at /users, seeded with default admin
+let currentUser = null; // { username, role }
+
+// Default users (used only if Firebase has nothing yet)
+const DEFAULT_USERS = [
+  { username:'admin', password:'1726', role:'admin' }
+];
+
+async function loadUsers() {
+  if (window.db) {
+    try {
+      const {ref,get,set} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+      const snap = await get(ref(window.db,'users'));
+      if (!snap.exists()) {
+        // Seed default admin on first run
+        await set(ref(window.db,'users'), DEFAULT_USERS);
+        return DEFAULT_USERS;
+      }
+      const raw = snap.val();
+      return Array.isArray(raw) ? raw : Object.values(raw);
+    } catch(e){ console.error('loadUsers error',e); return DEFAULT_USERS; }
+  } else {
+    try {
+      const raw = localStorage.getItem('mfw_users');
+      return raw ? JSON.parse(raw) : DEFAULT_USERS;
+    } catch(e){ return DEFAULT_USERS; }
+  }
+}
+
+async function saveUsers(users) {
+  if (window.db) {
+    try {
+      const {ref,set} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+      await set(ref(window.db,'users'), users);
+    } catch(e){ console.error('saveUsers error',e); }
+  } else {
+    try { localStorage.setItem('mfw_users', JSON.stringify(users)); } catch(e){}
+  }
+}
+
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  err.classList.remove('show');
+  const users = await loadUsers();
+  const match = users.find(x => x.username === u && x.password === p);
+  if (!match) {
+    err.classList.add('show');
+    document.getElementById('loginPass').value='';
+    return;
+  }
+  currentUser = { username: match.username, role: match.role };
+  // Store session
+  try { sessionStorage.setItem('mfw_session', JSON.stringify(currentUser)); } catch(e){}
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('headerUserChip').textContent = `👋 ${currentUser.username}`;
+  // Show Users button only for admin
+  document.getElementById('userMgmtBtn').style.display = currentUser.role==='admin' ? 'flex' : 'none';
+  await init();
+}
+
+function doLogout() {
+  currentUser = null;
+  try { sessionStorage.removeItem('mfw_session'); } catch(e){}
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginError').classList.remove('show');
+}
+
+async function checkSession() {
+  try {
+    const raw = sessionStorage.getItem('mfw_session');
+    if (raw) {
+      const sess = JSON.parse(raw);
+      // Verify user still exists
+      const users = await loadUsers();
+      const match = users.find(x => x.username===sess.username);
+      if (match) {
+        currentUser = { username: match.username, role: match.role };
+        document.getElementById('loginScreen').style.display='none';
+        document.getElementById('headerUserChip').textContent = `👋 ${currentUser.username}`;
+        document.getElementById('userMgmtBtn').style.display = currentUser.role==='admin' ? 'flex' : 'none';
+        return true;
+      }
+    }
+  } catch(e){}
+  return false;
+}
+
+/* User Management */
+async function openUserMgmt() {
+  if (currentUser?.role !== 'admin') return;
+  await renderUserList();
+  openModal('userMgmt');
+}
+
+async function renderUserList() {
+  const users = await loadUsers();
+  const el = document.getElementById('userList');
+  if (!users.length) { el.innerHTML='<div style="text-align:center;color:var(--text-medium);padding:12px;">No users yet.</div>'; return; }
+  el.innerHTML = users.map((u,i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${u.role==='admin'?'var(--lavender-light)':'var(--sky-light)'};border-radius:14px;margin-bottom:8px;">
+      <span style="font-size:22px;">${u.role==='admin'?'👑':'👀'}</span>
+      <div style="flex:1;">
+        <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:var(--text-dark);">${u.username}</div>
+        <div style="font-size:11px;color:var(--text-medium);">${u.role==='admin'?'Admin · Full Access':'Viewer · Read Only'}</div>
+      </div>
+      ${u.username==='admin'
+        ? `<span class="stat-chip chip-lavender" style="font-size:11px;">Protected</span>`
+        : `<button onclick="deleteUser(${i})" style="background:#FFE8E8;border:none;color:#FF4757;padding:5px 12px;border-radius:50px;cursor:pointer;font-family:'Baloo 2',cursive;font-weight:700;font-size:12px;">🗑️ Delete</button>`
+      }
+    </div>`).join('');
+}
+
+async function addUser() {
+  const username = document.getElementById('newUserName').value.trim();
+  const password = document.getElementById('newUserPass').value;
+  const role = document.getElementById('newUserRole').value;
+  if (!username) return alert('Please enter a username!');
+  if (!password) return alert('Please enter a password!');
+  const users = await loadUsers();
+  if (users.find(u => u.username===username)) return alert('Username already exists!');
+  users.push({ username, password, role });
+  await saveUsers(users);
+  document.getElementById('newUserName').value='';
+  document.getElementById('newUserPass').value='';
+  await renderUserList();
+}
+
+async function deleteUser(idx) {
+  const users = await loadUsers();
+  if (users[idx]?.username==='admin') return alert('Cannot delete the admin account!');
+  if (!confirm(`Delete user "${users[idx]?.username}"?`)) return;
+  users.splice(idx,1);
+  await saveUsers(users);
+  await renderUserList();
+}
+
 /* ═══════════════════════════════════════
    CONSTANTS & HELPERS
 ═══════════════════════════════════════ */
@@ -1107,7 +1340,14 @@ async function init(){
     console.warn("Firebase unavailable, using localStorage:",e);
     window.db=null;
   }
-  await init();
+  // Check for existing session; if valid skip login screen
+  const hasSession = await checkSession();
+  if (hasSession) {
+    await init();
+  } else {
+    // Just hide the app loading overlay; login screen is already visible
+    document.getElementById('loadingOverlay').style.display='none';
+  }
 })();
 
 /* ═══════════════════════════════════════
@@ -1321,27 +1561,71 @@ function renderGallery(){
 }
 
 let currentFoodFilter='all';
+let editingFoodIdx=null;
+let editFoodRatingVal=0;
+
 function filterFood(v){currentFoodFilter=v;renderFood();}
 function renderFood(){
   const pet=getPet();
+  const isAdmin = currentUser?.role === 'admin';
   let foods=pet.foods;
   if(currentFoodFilter!=='all') foods=foods.filter(f=>f.rating>=currentFoodFilter);
   document.getElementById('foodGrid').innerHTML=
     foods.map(f=>{
       const ri=pet.foods.indexOf(f);
       return `<div class="food-card">
-        <button class="food-del" onclick="removeFood(${ri})">🗑️</button>
+        ${isAdmin ? `<button class="food-edit" onclick="openEditFood(${ri})">✏️ Edit</button>` : ''}
+        ${isAdmin ? `<button class="food-del" onclick="removeFood(${ri})" style="${isAdmin?'':'display:none'}">🗑️</button>` : ''}
         <div class="food-img">${f.imgSrc?`<img src="${f.imgSrc}" alt="${f.name}">`:`<span>${f.emoji||'🍽️'}</span>`}</div>
         <div class="food-body">
           <div class="food-name">${f.name}</div>
           <div class="food-brand">${f.brand} · ${f.type}</div>
-          <div class="stars">${[1,2,3,4,5].map(s=>`<span class="star ${s<=f.rating?'filled':'empty'}" onclick="updateFoodRating(${ri},${s})">${s<=f.rating?'⭐':'☆'}</span>`).join('')}</div>
+          <div class="stars">${[1,2,3,4,5].map(s=>`<span class="star ${s<=f.rating?'filled':'empty'}" onclick="${isAdmin?`updateFoodRating(${ri},${s})`:'void(0)'}" style="${isAdmin?'':'cursor:default'}">${s<=f.rating?'⭐':'☆'}</span>`).join('')}</div>
           <div class="rating-badge">⭐ ${f.rating} / 5</div>
           ${f.note?`<div class="food-note">${f.note}</div>`:''}
         </div>
       </div>`;
     }).join('')+
-    `<div class="food-add-card" onclick="openModal('addFood')"><span style="font-size:36px;">🍽️</span><span>Add Food Review</span></div>`;
+    (isAdmin ? `<div class="food-add-card" onclick="openModal('addFood')"><span style="font-size:36px;">🍽️</span><span>Add Food Review</span></div>` : '');
+}
+
+function openEditFood(idx) {
+  editingFoodIdx = idx;
+  const f = getPet().foods[idx];
+  document.getElementById('editFoodName').value = f.name || '';
+  document.getElementById('editFoodBrand').value = f.brand || '';
+  document.getElementById('editFoodType').value = f.type || 'Dry Kibble';
+  editFoodRatingVal = f.rating || 0;
+  document.getElementById('editFoodRating').value = editFoodRatingVal;
+  updateEditStarPicker(editFoodRatingVal);
+  document.getElementById('editFoodNote').value = f.note || '';
+  document.getElementById('editFoodFile').value = '';
+  openModal('editFood');
+}
+
+function setEditRating(v){ editFoodRatingVal=v; document.getElementById('editFoodRating').value=v; updateEditStarPicker(v); }
+function updateEditStarPicker(v){ document.querySelectorAll('#editStarPicker .star-pick').forEach(s=>{ s.classList.toggle('on', parseInt(s.dataset.val)<=v); }); }
+
+function saveEditFood() {
+  if (editingFoodIdx === null) return;
+  const pet = getPet();
+  const f = pet.foods[editingFoodIdx];
+  f.name  = document.getElementById('editFoodName').value.trim() || f.name;
+  f.brand = document.getElementById('editFoodBrand').value;
+  f.type  = document.getElementById('editFoodType').value;
+  f.rating= parseInt(document.getElementById('editFoodRating').value) || f.rating;
+  f.note  = document.getElementById('editFoodNote').value;
+  // Update emoji to match new type
+  const foodEmojis={'Dry Kibble':'🍚','Wet Food':'🥣','Raw Food':'🥩','Freeze-Dried':'❄️','Treats':'🦴','Supplement':'💊'};
+  f.emoji = foodEmojis[f.type] || f.emoji;
+  const file = document.getElementById('editFoodFile').files[0];
+  if (file) {
+    const r = new FileReader();
+    r.onload = e => { f.imgSrc=e.target.result; closeModal('editFood'); renderFood(); saveState(); };
+    r.readAsDataURL(file);
+  } else {
+    closeModal('editFood'); renderFood(); saveState();
+  }
 }
 
 function updateFoodRating(idx,rating){getPet().foods[idx].rating=rating;renderFood();saveState();}
@@ -1515,37 +1799,6 @@ function addNote(){
   if(!text)return alert('Please write a note!');
   pet.notes.unshift({text,date});closeModal('addNote');renderHealth();saveState();
 }
-  /* ═══════════════════════════════════════
-   LOGIN & LOGOUT LOGIC
-═══════════════════════════════════════ */
-function doLogin() {
-  const user = document.getElementById('loginUser').value.trim();
-  const pass = document.getElementById('loginPass').value.trim();
-  const errorMsg = document.getElementById('loginError');
-
-  // Simple demo authentication (change these as needed!)
-  if (user === 'admin' && pass === 'password') {
-    // Hide the login screen on success
-    document.getElementById('loginScreen').style.display = 'none';
-    errorMsg.classList.remove('show');
-  } else {
-    // Show error and trigger the shake animation
-    errorMsg.classList.add('show');
-    
-    // Remove the class after the animation finishes so it can shake again next time
-    setTimeout(() => {
-      errorMsg.classList.remove('show');
-    }, 400);
-  }
-}
-
-function doLogout() {
-  // Show the login screen again and clear the inputs
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('loginUser').value = '';
-  document.getElementById('loginPass').value = '';
-}
-
 </script>
 </body>
 </html>
