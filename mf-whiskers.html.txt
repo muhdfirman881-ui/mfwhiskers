@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MF Whiskers 🐱</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink:#FF6B9D;--pink-light:#FFD6E7;
+    --yellow:#FFD93D;--yellow-light:#FFF3B0;
+    --mint:#6BCB77;--mint-light:#D4F5D7;
+    --lavender:#C77DFF;--lavender-light:#EDD9FF;
+    --sky:#4FC3F7;--sky-light:#D0EFFF;
+    --coral:#FF7F51;--coral-light:#FFE3D8;
+    --text-dark:#3D2C8D;--text-medium:#6B5CA5;
+    --shadow:0 4px 20px rgba(100,60,180,0.15);
+    --shadow-hover:0 8px 30px rgba(100,60,180,0.25);
+    --radius:24px;--radius-sm:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#FFE8F7 0%,#EDE8FF 30%,#E8F8FF 60%,#E8FFE8 100%);min-height:100vh;color:var(--text-dark);}
+
+  header{background:linear-gradient(135deg,#FF6B9D,#C77DFF,#4FC3F7);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(100,60,200,0.3);}
+  .logo{font-family:'Fredoka One',cursive;font-size:30px;color:white;display:flex;align-items:center;gap:10px;text-shadow:2px 2px 0 rgba(0,0,0,0.12);}
+  .logo .paw{font-size:34px;animation:bounce 2s ease-in-out infinite;}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .header-actions{display:flex;gap:10px;}
+  .btn-add-pet{background:white;color:var(--pink);border:none;padding:9px 20px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+  .btn-add-pet:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,0.2);}
+  .btn-del-pet{background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.5);padding:9px 16px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+  .btn-del-pet:hover{background:rgba(255,80,80,0.3);border-color:white;}
+
+  .container{max-width:1200px;margin:0 auto;padding:28px 24px;}
+
+  .tabs{display:flex;gap:6px;background:white;padding:7px;border-radius:50px;box-shadow:var(--shadow);margin-bottom:26px;overflow-x:auto;}
+  .tab{flex:1;padding:9px 16px;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:var(--text-medium);transition:all 0.25s;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;}
+  .tab.active{background:linear-gradient(135deg,var(--pink),var(--lavender));color:white;box-shadow:0 4px 14px rgba(199,125,255,0.4);}
+  .tab:not(.active):hover{background:var(--pink-light);color:var(--pink);}
+
+  .section-title{font-family:'Fredoka One',cursive;font-size:24px;color:var(--text-dark);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+
+  /* PET SELECTOR */
+  .pet-selector{display:flex;gap:14px;margin-bottom:26px;overflow-x:auto;padding-bottom:8px;}
+  .pet-card{background:white;border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:var(--shadow);transition:all 0.25s;border:3px solid transparent;min-width:190px;position:relative;}
+  .pet-card.active{border-color:var(--pink);background:var(--pink-light);}
+  .pet-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover);}
+  .pet-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden;position:relative;cursor:pointer;}
+  .pet-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+  .pet-avatar-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(60,20,120,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;font-size:18px;color:white;}
+  .pet-avatar:hover .pet-avatar-overlay{opacity:1;}
+  .pet-info h3{font-weight:800;font-size:15px;color:var(--text-dark);}
+  .pet-info p{font-size:11px;color:var(--text-medium);margin-top:2px;}
+  .pet-badge{position:absolute;top:-6px;right:-6px;background:var(--coral);color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:50px;}
+  .add-pet-card{background:white;border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:var(--shadow);border:3px dashed var(--lavender);min-width:150px;color:var(--lavender);font-weight:800;font-size:13px;transition:all 0.2s;}
+  .add-pet-card:hover{background:var(--lavender-light);transform:translateY(-3px);}
+
+  .panel{display:none;}.panel.active{display:block;}
+  .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;}
+  .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;}
+
+  .card{background:white;border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);}
+  .card-title{font-family:'Fredoka One',cursive;font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+
+  .stat-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:50px;font-size:12px;font-weight:700;}
+  .chip-pink{background:var(--pink-light);color:#C4185A;}
+  .chip-mint{background:var(--mint-light);color:#2A7A34;}
+  .chip-yellow{background:var(--yellow-light);color:#9A7000;}
+  .chip-sky{background:var(--sky-light);color:#0A6B9D;}
+  .chip-lavender{background:var(--lavender-light);color:#6B1FC0;}
+  .chip-coral{background:var(--coral-light);color:#C44E20;}
+
+  .vax-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--radius-sm);margin-bottom:9px;transition:all 0.2s;}
+  .vax-row:hover{transform:translateX(4px);}
+  .vax-row.done{background:var(--mint-light);}
+  .vax-row.upcoming{background:var(--yellow-light);}
+  .vax-row.overdue{background:#FFE8E8;}
+  .vax-icon{font-size:20px;flex-shrink:0;}
+  .vax-name{font-weight:700;font-size:13px;flex:1;}
+  .vax-date{font-size:11px;color:var(--text-medium);}
+  .vax-status{font-size:11px;font-weight:800;padding:3px 9px;border-radius:50px;}
+  .status-done{background:var(--mint);color:white;}
+  .status-upcoming{background:var(--yellow);color:#7A5A00;}
+  .status-overdue{background:#FF4757;color:white;}
+
+  .progress-wrap{margin:10px 0;}
+  .progress-label{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:5px;}
+  .progress-bar{height:11px;background:#EEE;border-radius:50px;overflow:hidden;}
+  .progress-fill{height:100%;border-radius:50px;transition:width 0.6s ease;}
+  .fill-pink{background:linear-gradient(90deg,var(--pink),var(--lavender));}
+  .fill-mint{background:linear-gradient(90deg,var(--mint),var(--sky));}
+  .fill-yellow{background:linear-gradient(90deg,var(--yellow),var(--coral));}
+
+  .deworm-timeline{position:relative;padding-left:24px;}
+  .deworm-timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--pink),var(--lavender),var(--sky));border-radius:3px;}
+  .deworm-event{position:relative;padding:11px 14px;background:white;border-radius:var(--radius-sm);margin-bottom:10px;box-shadow:0 2px 12px rgba(100,60,180,0.1);border-left:4px solid transparent;}
+  .deworm-event.done{border-color:var(--mint);}
+  .deworm-event.next{border-color:var(--yellow);background:var(--yellow-light);}
+  .deworm-dot{position:absolute;left:-32px;top:50%;transform:translateY(-50%);width:15px;height:15px;border-radius:50%;background:var(--pink);border:3px solid white;box-shadow:0 0 0 2px var(--pink);}
+  .deworm-dot.done{background:var(--mint);box-shadow:0 0 0 2px var(--mint);}
+  .deworm-dot.next{background:var(--yellow);box-shadow:0 0 0 2px var(--coral);}
+
+  /* GALLERY */
+  .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;}
+  .gallery-item{border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1;cursor:pointer;box-shadow:var(--shadow);transition:all 0.25s;position:relative;display:flex;align-items:center;justify-content:center;font-size:56px;}
+  .gallery-item:hover{transform:scale(1.05);box-shadow:var(--shadow-hover);}
+  .gallery-item img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+  .gallery-item .overlay{position:absolute;inset:0;background:rgba(100,60,200,0.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;font-size:22px;color:white;gap:10px;}
+  .gallery-item:hover .overlay{opacity:1;}
+  .gallery-caption{position:absolute;bottom:0;left:0;right:0;background:rgba(60,20,120,0.55);color:white;font-size:11px;font-weight:700;padding:5px 7px;text-align:center;}
+  .gallery-add{border-radius:var(--radius-sm);aspect-ratio:1;border:3px dashed var(--lavender);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;color:var(--lavender);font-weight:800;font-size:12px;transition:all 0.2s;background:var(--lavender-light);}
+  .gallery-add:hover{transform:scale(1.05);}
+
+  /* FOOD */
+  .food-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;}
+  .food-card{background:white;border-radius:var(--radius);padding:0;overflow:hidden;box-shadow:var(--shadow);transition:all 0.25s;position:relative;}
+  .food-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover);}
+  .food-img{width:100%;aspect-ratio:4/3;background:linear-gradient(135deg,#FFD6E7,#EDD9FF);display:flex;align-items:center;justify-content:center;font-size:52px;overflow:hidden;position:relative;}
+  .food-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+  .food-body{padding:14px;}
+  .food-name{font-weight:800;font-size:15px;margin-bottom:4px;}
+  .food-brand{font-size:12px;color:var(--text-medium);margin-bottom:8px;}
+  .stars{display:flex;gap:3px;margin-bottom:8px;}
+  .star{font-size:20px;cursor:pointer;transition:transform 0.15s;}
+  .star:hover{transform:scale(1.3);}
+  .star.filled{color:#FFD93D;}
+  .star.empty{color:#DDD;}
+  .food-note{font-size:12px;color:var(--text-medium);font-style:italic;border-top:1px solid #F0EEF8;padding-top:8px;margin-top:4px;}
+  .food-del{position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.85);border:none;border-radius:50px;padding:4px 8px;cursor:pointer;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+  .food-add-card{border-radius:var(--radius);aspect-ratio:auto;border:3px dashed var(--coral);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:var(--coral);font-weight:800;font-size:13px;transition:all 0.2s;background:var(--coral-light);padding:32px 16px;min-height:200px;}
+  .food-add-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover);}
+  .rating-badge{display:inline-flex;align-items:center;gap:4px;background:var(--yellow-light);color:#9A7000;font-size:12px;font-weight:800;padding:3px 10px;border-radius:50px;}
+
+  .overview-stat{background:white;border-radius:var(--radius);padding:18px;text-align:center;box-shadow:var(--shadow);transition:all 0.2s;}
+  .overview-stat:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover);}
+  .overview-stat .num{font-family:'Fredoka One',cursive;font-size:34px;margin:6px 0 3px;}
+  .overview-stat .label{font-size:12px;color:var(--text-medium);font-weight:700;}
+  .overview-stat .emoji{font-size:30px;}
+
+  .form-row{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+  .form-row label{font-weight:700;font-size:12px;color:var(--text-medium);}
+  .form-row input,.form-row select,.form-row textarea{padding:9px 13px;border:2px solid #EEE;border-radius:var(--radius-sm);font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;color:var(--text-dark);outline:none;transition:border-color 0.2s;}
+  .form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--lavender);}
+
+  .btn{padding:10px 22px;border-radius:50px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:7px;}
+  .btn:hover{transform:translateY(-2px);}
+  .btn-primary{background:linear-gradient(135deg,var(--pink),var(--lavender));color:white;box-shadow:0 4px 14px rgba(199,125,255,0.4);}
+  .btn-secondary{background:var(--sky-light);color:#1A7BAD;}
+  .btn-danger{background:#FFE8E8;color:#FF4757;}
+
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(60,20,120,0.4);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+  .modal-bg.open{display:flex;}
+  .modal{background:white;border-radius:var(--radius);padding:28px;width:90%;max-width:460px;box-shadow:0 20px 60px rgba(100,60,200,0.3);max-height:90vh;overflow-y:auto;}
+  .modal-title{font-family:'Fredoka One',cursive;font-size:22px;color:var(--text-dark);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;}
+
+  .deco-banner{background:linear-gradient(135deg,var(--yellow-light),var(--pink-light),var(--lavender-light));border-radius:var(--radius);padding:18px 24px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);}
+  .deco-banner .text h2{font-family:'Fredoka One',cursive;font-size:21px;color:var(--text-dark);}
+  .deco-banner .text p{font-size:12px;color:var(--text-medium);margin-top:3px;}
+  .deco-banner .emojis{font-size:38px;display:flex;gap:8px;}
+  .spin{display:inline-block;animation:spin 4s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .floaties{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .floaty{position:absolute;font-size:22px;opacity:0.07;animation:floatUp linear infinite;}
+  @keyframes floatUp{0%{transform:translateY(100vh) rotate(0deg);opacity:0.07}100%{transform:translateY(-120px) rotate(360deg);opacity:0}}
+
+  /* Star picker in modal */
+  .star-picker{display:flex;gap:6px;margin:8px 0;}
+  .star-pick{font-size:28px;cursor:pointer;transition:transform 0.15s;color:#DDD;}
+  .star-pick:hover,.star-pick.on{color:#FFD93D;transform:scale(1.2);}
+
+  /* Confirm delete overlay */
+  .confirm-bar{background:linear-gradient(135deg,#FF6B9D,#FF4757);color:white;border-radius:var(--radius);padding:16px 22px;display:none;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;box-shadow:0 4px 16px rgba(255,71,87,0.35);}
+  .confirm-bar.open{display:flex;}
+  .confirm-bar span{font-weight:700;font-size:14px;}
+  .confirm-btns{display:flex;gap:8px;}
+  .cbtn{padding:7px 16px;border-radius:50px;border:none;font-weight:800;font-size:13px;cursor:pointer;}
+  .cbtn-yes{background:white;color:#FF4757;}
+  .cbtn-no{background:rgba(255,255,255,0.25);color:white;border:1px solid rgba(255,255,255,0.5);}
+
+  @media(max-width:600px){header{padding:12px 16px;}.logo{font-size:22px;}.container{padding:16px 14px;}.grid-2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="floaties" id="floaties"></div>
+
+<header>
+  <div class="logo">
+    <span class="paw">😺</span> MF Whiskers
+  </div>
+  <div class="header-actions">
+    <button class="btn-del-pet" onclick="promptDeletePet()">🗑️ Delete Pet</button>
+    <button class="btn-add-pet" onclick="openModal('addPet')">➕ Add Pet</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Delete confirm bar -->
+  <div class="confirm-bar" id="confirmBar">
+    <span id="confirmMsg">Delete this pet?</span>
+    <div class="confirm-btns">
+      <button class="cbtn cbtn-yes" onclick="confirmDeletePet()">Yes, Delete 🗑️</button>
+      <button class="cbtn cbtn-no" onclick="cancelDelete()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- PET SELECTOR -->
+  <div class="pet-selector" id="petSelector"></div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview')" id="tab-overview">🏠 Overview</button>
+    <button class="tab" onclick="switchTab('vaccines')" id="tab-vaccines">💉 Vaccines</button>
+    <button class="tab" onclick="switchTab('deworming')" id="tab-deworming">🪱 Deworming</button>
+    <button class="tab" onclick="switchTab('gallery')" id="tab-gallery">📸 Gallery</button>
+    <button class="tab" onclick="switchTab('food')" id="tab-food">🍽️ Food</button>
+    <button class="tab" onclick="switchTab('health')" id="tab-health">❤️ Health</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="panel active" id="panel-overview">
+    <div class="deco-banner">
+      <div class="text"><h2 id="greetPet">Hey Mochi! 🐶</h2><p id="greetSub">All looking good today! 🌟</p></div>
+      <div class="emojis"><span class="spin">🌟</span><span>🐾</span></div>
+    </div>
+    <div class="grid-3" style="margin-bottom:22px;">
+      <div class="overview-stat"><div class="emoji">💉</div><div class="num" id="vaxCount" style="color:var(--pink)">4</div><div class="label">Vaccines Done</div></div>
+      <div class="overview-stat"><div class="emoji">🪱</div><div class="num" id="dewormCount" style="color:var(--lavender)">3</div><div class="label">Dewormings</div></div>
+      <div class="overview-stat"><div class="emoji">📸</div><div class="num" id="galleryCount" style="color:var(--sky)">6</div><div class="label">Photos</div></div>
+      <div class="overview-stat"><div class="emoji">⚖️</div><div class="num" id="petWeight" style="color:var(--coral)">5.2</div><div class="label">Weight (kg)</div></div>
+      <div class="overview-stat"><div class="emoji">🎂</div><div class="num" id="petAge" style="color:var(--mint)">2y</div><div class="label">Age</div></div>
+      <div class="overview-stat"><div class="emoji">🍽️</div><div class="num" id="foodCount" style="color:var(--yellow)">0</div><div class="label">Foods Rated</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color:var(--pink)">💉 Vaccine Coverage</div>
+        <div class="progress-wrap"><div class="progress-label"><span>Rabies</span><span>100%</span></div><div class="progress-bar"><div class="progress-fill fill-pink" style="width:100%"></div></div></div>
+        <div class="progress-wrap"><div class="progress-label"><span>Core Vaccines</span><span id="coreVaxPct">75%</span></div><div class="progress-bar"><div class="progress-fill fill-mint" id="coreVaxBar" style="width:75%"></div></div></div>
+        <div class="progress-wrap"><div class="progress-label"><span>Overall</span><span id="overallVaxPct">60%</span></div><div class="progress-bar"><div class="progress-fill fill-yellow" id="overallVaxBar" style="width:60%"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--lavender)">📅 Upcoming Reminders</div>
+        <div id="upcomingList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VACCINES -->
+  <div class="panel" id="panel-vaccines">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div class="section-title">💉 Vaccine Records</div>
+      <button class="btn btn-primary" onclick="openModal('addVaccine')">➕ Add Vaccine</button>
+    </div>
+    <div class="card" style="margin-bottom:18px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <span class="stat-chip chip-mint">✅ Done: <span id="vDone">0</span></span>
+        <span class="stat-chip chip-yellow">⏰ Upcoming: <span id="vUpcoming">0</span></span>
+        <span class="stat-chip chip-pink">🚨 Overdue: <span id="vOverdue">0</span></span>
+      </div>
+      <div id="vaccineList"></div>
+    </div>
+  </div>
+
+  <!-- DEWORMING -->
+  <div class="panel" id="panel-deworming">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div class="section-title">🪱 Deworming Schedule</div>
+      <button class="btn btn-primary" onclick="openModal('addDeworm')">➕ Add Record</button>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color:var(--lavender)">📋 Deworming History</div>
+        <div class="deworm-timeline" id="dewormList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--mint)">💊 Medications Used</div>
+        <div id="medicationList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <div class="panel" id="panel-gallery">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div class="section-title">📸 Photo Gallery</div>
+      <button class="btn btn-primary" onclick="openModal('addPhoto')">📷 Add Photo</button>
+    </div>
+    <div class="gallery-grid" id="galleryGrid"></div>
+  </div>
+
+  <!-- FOOD -->
+  <div class="panel" id="panel-food">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div class="section-title">🍽️ Food Reviews</div>
+      <button class="btn btn-primary" onclick="openModal('addFood')">➕ Add Food</button>
+    </div>
+    <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;" id="foodFilters">
+      <button onclick="filterFood('all')" class="stat-chip chip-sky" style="cursor:pointer;border:none;" id="ff-all">All</button>
+      <button onclick="filterFood(5)" class="stat-chip chip-yellow" style="cursor:pointer;border:none;" id="ff-5">⭐⭐⭐⭐⭐</button>
+      <button onclick="filterFood(4)" class="stat-chip chip-mint" style="cursor:pointer;border:none;" id="ff-4">⭐⭐⭐⭐+</button>
+      <button onclick="filterFood(3)" class="stat-chip chip-lavender" style="cursor:pointer;border:none;" id="ff-3">⭐⭐⭐+</button>
+    </div>
+    <div class="food-grid" id="foodGrid"></div>
+  </div>
+
+  <!-- HEALTH -->
+  <div class="panel" id="panel-health">
+    <div class="section-title">❤️ Health Profile</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color:var(--coral)">⚖️ Weight Log</div>
+        <div id="weightLog"></div>
+        <button class="btn btn-secondary" style="margin-top:10px;" onclick="openModal('addWeight')">+ Log Weight</button>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--sky)">📝 Health Notes</div>
+        <div id="healthNotes"></div>
+        <button class="btn btn-secondary" style="margin-top:10px;" onclick="openModal('addNote')">+ Add Note</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px;">
+      <div class="card-title" style="color:var(--lavender)">🏥 Vet Information</div>
+      <div id="vetInfo"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ MODALS ============ -->
+
+<!-- ADD PET -->
+<div class="modal-bg" id="modal-addPet">
+  <div class="modal">
+    <div class="modal-title">🐾 Add New Pet</div>
+    <div class="form-row"><label>Pet Name</label><input type="text" id="newPetName" placeholder="e.g. Mochi, Luna, Max..."></div>
+    <div class="form-row">
+      <label>Species</label>
+      <select id="newPetSpecies" onchange="updateBreedOptions()">
+        <option value="cat">🐱 Cat</option>
+        <option value="dog">🐶 Dog</option>
+        <option value="rabbit">🐰 Rabbit</option>
+        <option value="bird">🐦 Bird</option>
+        <option value="hamster">🐹 Hamster</option>
+        <option value="fish">🐠 Fish</option>
+        <option value="turtle">🐢 Turtle</option>
+        <option value="other">🐾 Other</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Breed</label>
+      <select id="newPetBreed"></select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-row"><label>Birthday</label><input type="date" id="newPetBday"></div>
+      <div class="form-row"><label>Weight (kg)</label><input type="number" id="newPetWeight" placeholder="4.5" step="0.1"></div>
+    </div>
+    <div class="form-row">
+      <label>Gender</label>
+      <select id="newPetGender"><option value="female">♀ Female</option><option value="male">♂ Male</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('addPet')">Cancel</button>
+      <button class="btn btn-primary" onclick="addPet()">🐾 Add Pet!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD VACCINE -->
+<div class="modal-bg" id="modal-addVaccine">
+  <div class="modal">
+    <div class="modal-title">💉 Add Vaccine</div>
+    <div class="form-row"><label>Vaccine Name</label>
+      <select id="newVaxName">
+        <option>Rabies</option><option>DHPP / DA2PP</option><option>Bordetella</option>
+        <option>Leptospirosis</option><option>Canine Influenza</option>
+        <option>FVRCP (Feline)</option><option>FeLV (Feline Leukemia)</option>
+        <option>Feline Rabies</option><option>Chlamydophila felis</option><option>Custom...</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-row"><label>Date Given</label><input type="date" id="newVaxDate"></div>
+      <div class="form-row"><label>Next Due</label><input type="date" id="newVaxDue"></div>
+    </div>
+    <div class="form-row"><label>Clinic / Vet</label><input type="text" id="newVaxClinic" placeholder="Happy Paws Clinic"></div>
+    <div class="form-row"><label>Batch / Lot Number</label><input type="text" id="newVaxBatch" placeholder="LOT2024XYZ"></div>
+    <div class="form-row"><label>Notes</label><textarea id="newVaxNotes" rows="2" placeholder="Any reactions or observations..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('addVaccine')">Cancel</button>
+      <button class="btn btn-primary" onclick="addVaccine()">💉 Save!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD DEWORM -->
+<div class="modal-bg" id="modal-addDeworm">
+  <div class="modal">
+    <div class="modal-title">🪱 Add Deworming</div>
+    <div class="form-row"><label>Medication</label>
+      <select id="newDewormMed">
+        <option>Drontal Plus</option><option>Panacur (Fenbendazole)</option>
+        <option>Milbemax</option><option>Heartgard Plus</option>
+        <option>Interceptor</option><option>Revolution</option><option>Custom...</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-row"><label>Date Given</label><input type="date" id="newDewormDate"></div>
+      <div class="form-row"><label>Next Due</label><input type="date" id="newDewormDue"></div>
+    </div>
+    <div class="form-row"><label>Dosage</label><input type="text" id="newDewormDose" placeholder="e.g. 1 tablet"></div>
+    <div class="form-row"><label>Notes</label><textarea id="newDewormNotes" rows="2" placeholder="Side effects, observations..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('addDeworm')">Cancel</button>
+      <button class="btn btn-primary" onclick="addDeworm()">🪱 Save!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PHOTO -->
+<div class="modal-bg" id="modal-addPhoto">
+  <div class="modal">
+    <div class="modal-title">📸 Add Photo Memory</div>
+    <div class="form-row"><label>Caption</label><input type="text" id="newPhotoCaption" placeholder="First bath day!"></div>
+    <div class="form-row"><label>Category</label>
+      <select id="newPhotoCategory"><option>Cute Moments</option><option>Vet Visits</option><option>Milestones</option><option>Playtime</option><option>Sleeping</option></select>
+    </div>
+    <div class="form-row"><label>Date</label><input type="date" id="newPhotoDate"></div>
+    <div class="form-row"><label>Upload Photo</label><input type="file" id="newPhotoFile" accept="image/*"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('addPhoto')">Cancel</button>
+      <button class="btn btn-primary" onclick="addPhoto()">📸 Save!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD FOOD -->
+<div class="modal-bg" id="modal-addFood">
+  <div class="modal">
+    <div class="modal-title">🍽️ Add Food Review</div>
+    <div class="form-row"><label>Food Name</label><input type="text" id="newFoodName" placeholder="e.g. Royal Canin Adult Indoor"></div>
+    <div class="form-row"><label>Brand</label><input type="text" id="newFoodBrand" placeholder="e.g. Royal Canin"></div>
+    <div class="form-row"><label>Type</label>
+      <select id="newFoodType">
+        <option>Dry Kibble</option><option>Wet Food</option><option>Raw Food</option>
+        <option>Freeze-Dried</option><option>Treats</option><option>Supplement</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Rating (tap stars)</label>
+      <div class="star-picker" id="starPicker">
+        <span class="star-pick" data-val="1" onclick="setRating(1)">⭐</span>
+        <span class="star-pick" data-val="2" onclick="setRating(2)">⭐</span>
+        <span class="star-pick" data-val="3" onclick="setRating(3)">⭐</span>
+        <span class="star-pick" data-val="4" onclick="setRating(4)">⭐</span>
+        <span class="star-pick" data-val="5" onclick="setRating(5)">⭐</span>
+      </div>
+      <input type="hidden" id="newFoodRating" value="0">
+    </div>
+    <div class="form-row"><label>Notes / Review</label><textarea id="newFoodNote" rows="2" placeholder="e.g. Loves this! Finishes every bowl 😻"></textarea></div>
+    <div class="form-row"><label>Photo (optional)</label><input type="file" id="newFoodFile" accept="image/*"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('addFood')">Cancel</button>
+      <button class="btn btn-primary" onclick="addFood()">🍽️ Save!</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE PIC -->
+<div class="modal-bg" id="modal-profilePic">
+  <div class="modal">
+    <div class="modal-title">📷 Set Profile Picture</div>
+    <div class="form-row"><label>Upload Photo</label><input type="file" id="profilePicFile" accept="image/*"></div>
+    <div style="text-align:center;margin:12px 0;">
+      <div id="profilePreview" style="width:100px;height:100px;border-radius:50%;margin:0 auto;overflow:hidden;background:linear-gradient(135deg,#FFD6E7,#EDD9FF);display:flex;align-items:center;justify-content:center;font-size:40px;border:4px solid var(--lavender);">😺</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('profilePic')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProfilePic()">💾 Set Photo!</button>
+    </div>
+  </div>
+</div>
+
+<!-- WEIGHT -->
+<div class="modal-bg" id="modal-addWeight">
+  <div class="modal">
+    <div class="modal-title">⚖️ Log Weight</div>
+    <div class="form-row"><label>Weight (kg)</label><input type="number" id="newWeightVal" placeholder="5.2" step="0.1"></div>
+    <div class="form-row"><label>Date</label><input type="date" id="newWeightDate"></div>
+    <div class="form-row"><label>Notes</label><input type="text" id="newWeightNote" placeholder="e.g. After diet change"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('addWeight')">Cancel</button>
+      <button class="btn btn-primary" onclick="addWeight()">💾 Save!</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE -->
+<div class="modal-bg" id="modal-addNote">
+  <div class="modal">
+    <div class="modal-title">📝 Health Note</div>
+    <div class="form-row"><label>Note</label><textarea id="newNoteText" rows="4" placeholder="e.g. Had a bit of a runny nose today, monitoring..."></textarea></div>
+    <div class="form-row"><label>Date</label><input type="date" id="newNoteDate"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('addNote')">Cancel</button>
+      <button class="btn btn-primary" onclick="addNote()">💾 Save!</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="hiddenAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+
+<script>
+const SPECIES_EMOJI={cat:'😺',dog:'🐶',rabbit:'🐰',bird:'🐦',hamster:'🐹',fish:'🐠',turtle:'🐢',other:'🐾'};
+const BG_COLORS=['linear-gradient(135deg,#FFD6E7,#FFC4E6)','linear-gradient(135deg,#D4F5D7,#B8EDD0)','linear-gradient(135deg,#D0EFFF,#C3E8FF)','linear-gradient(135deg,#EDD9FF,#E0CAFF)','linear-gradient(135deg,#FFF3B0,#FFE88A)','linear-gradient(135deg,#FFE3D8,#FFD1C0)'];
+
+const CAT_BREEDS=['Abyssinian','American Bobtail','American Curl','American Shorthair','Balinese','Bengal','Birman','Bombay','British Longhair','British Shorthair','Burmese','Burmilla','Chartreux','Cornish Rex','Devon Rex','Egyptian Mau','Exotic Shorthair','Himalayan','Japanese Bobtail','Javanese','Khao Manee','Korat','LaPerm','Maine Coon','Manx','Munchkin','Norwegian Forest Cat','Ocicat','Oriental Longhair','Oriental Shorthair','Persian','Peterbald','Pixiebob','Ragamuffin','Ragdoll','Russian Blue','Savannah','Scottish Fold','Selkirk Rex','Siamese','Siberian','Singapura','Snowshoe','Sokoke','Somali','Sphynx','Thai','Tonkinese','Turkish Angora','Turkish Van','Mixed / Domestic Shorthair','Mixed / Domestic Longhair'];
+const DOG_BREEDS=['Affenpinscher','Afghan Hound','Airedale Terrier','Akita','Alaskan Malamute','Australian Shepherd','Basenji','Basset Hound','Beagle','Belgian Malinois','Bernese Mountain Dog','Bichon Frise','Border Collie','Boxer','Bulldog','Cavalier King Charles Spaniel','Chihuahua','Chow Chow','Cocker Spaniel','Dachshund','Dalmatian','Doberman Pinscher','French Bulldog','German Shepherd','Golden Retriever','Great Dane','Greyhound','Havanese','Husky','Jack Russell Terrier','Labrador Retriever','Maltese','Miniature Schnauzer','Papillon','Pomeranian','Poodle','Pug','Rottweiler','Saint Bernard','Samoyed','Shiba Inu','Shih Tzu','Staffordshire Bull Terrier','Weimaraner','Welsh Corgi','Yorkshire Terrier','Mixed Breed'];
+const RABBIT_BREEDS=['Holland Lop','Mini Rex','Netherland Dwarf','Lionhead','Rex','Flemish Giant','English Angora','Dutch','Mini Lop','Californian','Mixed Breed'];
+const BIRD_BREEDS=['Budgerigar (Budgie)','Cockatiel','African Grey Parrot','Lovebird','Macaw','Conure','Canary','Finch','Cockatoo','Eclectus'];
+const GENERIC_BREEDS=['Mixed / Unknown','Other'];
+
+function getBreedsForSpecies(sp){
+  return {cat:CAT_BREEDS,dog:DOG_BREEDS,rabbit:RABBIT_BREEDS,bird:BIRD_BREEDS}[sp]||GENERIC_BREEDS;
+}
+
+function updateBreedOptions(){
+  const sp=document.getElementById('newPetSpecies').value;
+  const sel=document.getElementById('newPetBreed');
+  sel.innerHTML=getBreedsForSpecies(sp).map(b=>`<option>${b}</option>`).join('');
+}
+
+let currentFoodFilter='all';
+let pendingProfilePetIdx=null;
+let pendingProfileData=null;
+let tempRating=0;
+
+let state={
+  activePet:0,
+  pets:[
+    {
+      id:1,name:'Mochi',species:'dog',breed:'Shih Tzu',birthday:'2022-04-15',weight:5.2,gender:'male',profilePic:null,
+      vaccines:[
+        {id:1,name:'Rabies',date:'2024-01-15',due:'2025-01-15',clinic:'Happy Paws Clinic',batch:'LOT24A',status:'done'},
+        {id:2,name:'DHPP / DA2PP',date:'2024-03-10',due:'2025-03-10',clinic:'Happy Paws Clinic',batch:'LOT24B',status:'done'},
+        {id:3,name:'Bordetella',date:'2024-06-01',due:'2025-06-01',clinic:'PetCare Hospital',batch:'LOT24C',status:'upcoming'},
+        {id:4,name:'Leptospirosis',date:'2024-09-20',due:'2025-09-20',clinic:'Happy Paws Clinic',batch:'LOT24D',status:'done'},
+        {id:5,name:'Canine Influenza',date:'2023-12-05',due:'2024-12-05',clinic:'City Vet',batch:'LOT23E',status:'overdue'},
+      ],
+      dewormings:[
+        {id:1,med:'Drontal Plus',date:'2024-02-10',due:'2024-05-10',dose:'1 tablet',notes:'No issues',status:'done'},
+        {id:2,med:'Drontal Plus',date:'2024-05-15',due:'2024-08-15',dose:'1 tablet',notes:'Mild lethargy 1 day',status:'done'},
+        {id:3,med:'Milbemax',date:'2024-08-20',due:'2024-11-20',dose:'1 tablet',notes:'All good!',status:'done'},
+        {id:4,med:'Milbemax',date:'',due:'2025-02-20',dose:'1 tablet',notes:'Scheduled',status:'next'},
+      ],
+      gallery:[
+        {id:1,emoji:'🐶',caption:'First day home!',category:'Milestones',date:'2022-04-20',color:'#FFD6E7'},
+        {id:2,emoji:'🛁',caption:'Bath time fun',category:'Cute Moments',date:'2022-06-10',color:'#D0EFFF'},
+        {id:3,emoji:'💉',caption:'First vaccine!',category:'Vet Visits',date:'2022-07-05',color:'#EDD9FF'},
+        {id:4,emoji:'🌳',caption:'Park adventure',category:'Playtime',date:'2023-01-15',color:'#D4F5D7'},
+        {id:5,emoji:'😴',caption:'Sleepy paws',category:'Sleeping',date:'2023-05-22',color:'#FFF3B0'},
+        {id:6,emoji:'🎂',caption:'2nd Birthday!',category:'Milestones',date:'2024-04-15',color:'#FFE3D8'},
+      ],
+      foods:[],
+      weights:[{val:1.2,date:'2022-04-15',note:'Puppy weight'},{val:2.8,date:'2022-07-01',note:'Growing fast!'},{val:5.2,date:'2024-03-15',note:'Stable'}],
+      notes:[{text:'Scratching right ear. Vet recommended ear drops.',date:'2024-05-12'},{text:'Great energy! Loves new toy.',date:'2024-08-01'}],
+      vet:{name:'Dr. Sarah Lim',clinic:'Happy Paws Clinic',phone:'+60 11-2345 6789',email:'happypaws@vet.com'}
+    },
+    {
+      id:2,name:'Luna',species:'cat',breed:'Persian',birthday:'2021-08-22',weight:4.0,gender:'female',profilePic:null,
+      vaccines:[
+        {id:1,name:'FVRCP (Feline)',date:'2023-08-22',due:'2024-08-22',clinic:'Cat Haven Clinic',batch:'CAT23A',status:'done'},
+        {id:2,name:'Feline Rabies',date:'2023-09-10',due:'2024-09-10',clinic:'Cat Haven Clinic',batch:'CAT23B',status:'overdue'},
+        {id:3,name:'FeLV (Feline Leukemia)',date:'2024-01-15',due:'2025-01-15',clinic:'City Pet Hospital',batch:'CAT24A',status:'done'},
+      ],
+      dewormings:[
+        {id:1,med:'Panacur (Fenbendazole)',date:'2023-09-01',due:'2023-12-01',dose:'0.5ml paste',notes:'Fine',status:'done'},
+        {id:2,med:'Revolution',date:'2024-01-10',due:'2024-04-10',dose:'1 pipette',notes:'Applied topically',status:'done'},
+        {id:3,med:'Revolution',date:'',due:'2025-04-10',dose:'1 pipette',notes:'Due soon',status:'next'},
+      ],
+      gallery:[
+        {id:1,emoji:'🐱',caption:'Day 1!',category:'Milestones',date:'2021-08-22',color:'#EDD9FF'},
+        {id:2,emoji:'🌙',caption:'Luna at night',category:'Cute Moments',date:'2022-01-05',color:'#D0EFFF'},
+        {id:3,emoji:'🧸',caption:'Toy time!',category:'Playtime',date:'2022-09-15',color:'#FFD6E7'},
+      ],
+      foods:[
+        {id:1,name:'Royal Canin Indoor',brand:'Royal Canin',type:'Dry Kibble',rating:5,note:'Loves it every day 😻',color:'#FFD6E7',emoji:'🍚'},
+        {id:2,name:'Sheba Tuna',brand:'Sheba',type:'Wet Food',rating:4,note:'Finishes the bowl fast!',color:'#D0EFFF',emoji:'🐟'},
+      ],
+      weights:[{val:0.8,date:'2021-08-22',note:'Kitten'},{val:2.5,date:'2022-03-01',note:''},{val:4.0,date:'2024-01-15',note:'Healthy weight'}],
+      notes:[{text:'Loves window perch. Needs more exercise.',date:'2024-06-01'}],
+      vet:{name:'Dr. Ahmad Rashid',clinic:'Cat Haven Clinic',phone:'+60 19-8765 4321',email:'cathaven@vet.com'}
+    }
+  ]
+};
+
+function init(){spawnFloaties();updateBreedOptions();renderPetSelector();renderAll();}
+function getPet(){return state.pets[state.activePet];}
+function calcAge(b){if(!b)return'?';const bd=new Date(b),n=new Date();const y=n.getFullYear()-bd.getFullYear();return y<1?(n.getMonth()-bd.getMonth()+12)%12+'mo':y+'y';}
+
+function spawnFloaties(){
+  const f=document.getElementById('floaties');
+  const em=['🐾','🌟','💖','🌈','🎀','🌸','⭐','💕','😺','🐶','🐱'];
+  for(let i=0;i<12;i++){
+    const el=document.createElement('div');el.className='floaty';
+    el.textContent=em[Math.floor(Math.random()*em.length)];
+    el.style.left=Math.random()*100+'vw';
+    el.style.animationDuration=(8+Math.random()*12)+'s';
+    el.style.animationDelay=(-Math.random()*15)+'s';
+    el.style.fontSize=(14+Math.random()*18)+'px';
+    f.appendChild(el);
+  }
+}
+
+// ---- PET SELECTOR ----
+function renderPetSelector(){
+  const sel=document.getElementById('petSelector');
+  sel.innerHTML='';
+  state.pets.forEach((pet,idx)=>{
+    const card=document.createElement('div');
+    card.className='pet-card'+(idx===state.activePet?' active':'');
+    const bgIdx=idx%BG_COLORS.length;
+    const overdue=pet.vaccines.filter(v=>v.status==='overdue').length;
+    const avatarContent=pet.profilePic
+      ?`<img src="${pet.profilePic}" alt="${pet.name}">`
+      :`<span>${SPECIES_EMOJI[pet.species]||'🐾'}</span>`;
+    card.innerHTML=`
+      ${overdue?`<div class="pet-badge">⚠️ ${overdue}</div>`:''}
+      <div class="pet-avatar" style="background:${BG_COLORS[bgIdx]}" onclick="openProfilePicModal(${idx})" title="Click to set profile photo">
+        ${avatarContent}
+        <div class="pet-avatar-overlay">📷</div>
+      </div>
+      <div class="pet-info" onclick="selectPet(${idx})" style="flex:1;cursor:pointer;">
+        <h3>${pet.name}</h3>
+        <p>${pet.breed||pet.species} · ${calcAge(pet.birthday)}</p>
+      </div>`;
+    sel.appendChild(card);
+  });
+  const addCard=document.createElement('div');
+  addCard.className='add-pet-card';addCard.onclick=()=>openModal('addPet');
+  addCard.innerHTML=`<span style="font-size:26px">➕</span><span>Add Pet</span>`;
+  sel.appendChild(addCard);
+}
+
+function selectPet(idx){state.activePet=idx;renderPetSelector();renderAll();}
+
+// ---- TABS ----
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+// ---- RENDER ALL ----
+function renderAll(){renderOverview();renderVaccines();renderDeworming();renderGallery();renderFood();renderHealth();}
+
+// ---- OVERVIEW ----
+function renderOverview(){
+  const pet=getPet();
+  document.getElementById('greetPet').textContent=`Hey ${pet.name}! ${SPECIES_EMOJI[pet.species]}`;
+  const overdueVax=pet.vaccines.filter(v=>v.status==='overdue').length;
+  document.getElementById('greetSub').textContent=overdueVax>0?`⚠️ ${overdueVax} overdue vaccine(s) need attention!`:`All looking good today! Keep up the great care 🌟`;
+  const doneVax=pet.vaccines.filter(v=>v.status==='done').length;
+  document.getElementById('vaxCount').textContent=doneVax;
+  document.getElementById('dewormCount').textContent=pet.dewormings.filter(d=>d.status==='done').length;
+  document.getElementById('galleryCount').textContent=pet.gallery.length;
+  document.getElementById('petWeight').textContent=pet.weight;
+  document.getElementById('petAge').textContent=calcAge(pet.birthday);
+  document.getElementById('foodCount').textContent=pet.foods.length;
+  const total=pet.vaccines.length||1;
+  const pct=Math.round((doneVax/total)*100);
+  document.getElementById('overallVaxPct').textContent=pct+'%';
+  document.getElementById('overallVaxBar').style.width=pct+'%';
+  const corePct=Math.min(100,Math.round((doneVax/(Math.max(3,total)))*100));
+  document.getElementById('coreVaxPct').textContent=corePct+'%';
+  document.getElementById('coreVaxBar').style.width=corePct+'%';
+  const upcoming=[...pet.vaccines.filter(v=>v.status==='upcoming'||v.status==='overdue'),...pet.dewormings.filter(d=>d.status==='next')];
+  const ul=document.getElementById('upcomingList');
+  if(!upcoming.length){ul.innerHTML=`<div style="text-align:center;padding:18px;color:var(--text-medium);font-size:13px;">🎉 No upcoming items!</div>`;}
+  else{ul.innerHTML=upcoming.slice(0,4).map(item=>{const isV=item.hasOwnProperty('clinic');return`<div class="vax-row ${item.status==='overdue'?'overdue':'upcoming'}" style="cursor:default;"><span class="vax-icon">${isV?'💉':'🪱'}</span><div class="vax-name">${item.name||item.med}</div><div class="vax-date">Due: ${item.due||'—'}</div><span class="vax-status ${item.status==='overdue'?'status-overdue':'status-upcoming'}">${item.status==='overdue'?'🚨 Overdue':'⏰ Soon'}</span></div>`}).join('');}
+}
+
+// ---- VACCINES ----
+function renderVaccines(){
+  const pet=getPet();
+  document.getElementById('vDone').textContent=pet.vaccines.filter(v=>v.status==='done').length;
+  document.getElementById('vUpcoming').textContent=pet.vaccines.filter(v=>v.status==='upcoming').length;
+  document.getElementById('vOverdue').textContent=pet.vaccines.filter(v=>v.status==='overdue').length;
+  const icons={Rabies:'🐺','DHPP / DA2PP':'🛡️',Bordetella:'🌬️',Leptospirosis:'🧬','Canine Influenza':'🤧','FVRCP (Feline)':'🔬','FeLV (Feline Leukemia)':'🦠','Feline Rabies':'🐾','Chlamydophila felis':'🌿'};
+  document.getElementById('vaccineList').innerHTML=pet.vaccines.map((v,i)=>`
+    <div class="vax-row ${v.status}" style="cursor:default;">
+      <span class="vax-icon">${icons[v.name]||'💉'}</span>
+      <div style="flex:1;"><div class="vax-name">${v.name}</div><div class="vax-date">${v.date?'📅 '+v.date:' Not yet given'}${v.clinic?' · 🏥 '+v.clinic:''}</div></div>
+      <div style="text-align:right;"><div class="vax-date" style="margin-bottom:3px;">Next: ${v.due||'—'}</div><span class="vax-status status-${v.status}">${v.status==='done'?'✅ Done':v.status==='upcoming'?'⏰ Upcoming':'🚨 Overdue'}</span></div>
+      <button onclick="removeVaccine(${i})" style="background:none;border:none;cursor:pointer;font-size:15px;padding:4px;" title="Remove">🗑️</button>
+    </div>`).join('');
+}
+
+// ---- DEWORMING ----
+function renderDeworming(){
+  const pet=getPet();
+  document.getElementById('dewormList').innerHTML=pet.dewormings.map(d=>`
+    <div class="deworm-event ${d.status}"><div class="deworm-dot ${d.status}"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div><div style="font-weight:700;font-size:13px;">${d.med}</div><div style="font-size:11px;color:var(--text-medium);margin-top:2px;">${d.dose} · ${d.date||'Scheduled'}</div>${d.notes?`<div style="font-size:11px;color:var(--text-medium);margin-top:2px;font-style:italic;">"${d.notes}"</div>`:''}</div>
+        <div style="text-align:right;"><span class="vax-status ${d.status==='done'?'status-done':'status-upcoming'}">${d.status==='done'?'✅ Done':'⏰ Next'}</span>${d.due?`<div style="font-size:11px;color:var(--text-medium);margin-top:3px;">Due: ${d.due}</div>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+  const meds={};
+  pet.dewormings.forEach(d=>{meds[d.med]=(meds[d.med]||0)+1;});
+  document.getElementById('medicationList').innerHTML=Object.entries(meds).map(([med,count])=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--lavender-light);border-radius:14px;margin-bottom:9px;">
+      <span style="font-size:20px;">💊</span><div style="flex:1;"><div style="font-weight:700;font-size:13px;">${med}</div><div style="font-size:11px;color:var(--text-medium);">Used ${count} time${count>1?'s':''}</div></div>
+      <span class="stat-chip chip-lavender">${count}x</span>
+    </div>`).join('');
+}
+
+// ---- GALLERY ----
+function renderGallery(){
+  const pet=getPet();
+  const grid=document.getElementById('galleryGrid');
+  grid.innerHTML=pet.gallery.map((p,i)=>`
+    <div class="gallery-item" style="background:${p.color||'#FFD6E7'};" title="${p.caption}">
+      ${p.imgSrc?`<img src="${p.imgSrc}" alt="${p.caption}">`:`<span style="position:relative;z-index:1;">${p.emoji}</span>`}
+      <div class="overlay"><span onclick="removeGallery(${i})" title="Delete">🗑️</span></div>
+      <div class="gallery-caption">${p.caption}</div>
+    </div>`).join('')+`<div class="gallery-add" onclick="openModal('addPhoto')"><span style="font-size:30px;">📷</span><span>Add Photo</span></div>`;
+}
+
+// ---- FOOD ----
+function filterFood(v){currentFoodFilter=v;renderFood();}
+function renderFood(){
+  const pet=getPet();
+  let foods=pet.foods;
+  if(currentFoodFilter!=='all') foods=foods.filter(f=>f.rating>=currentFoodFilter);
+  const grid=document.getElementById('foodGrid');
+  grid.innerHTML=foods.map((f,i)=>`
+    <div class="food-card">
+      <button class="food-del" onclick="removeFood(${pet.foods.indexOf(f)})" title="Delete">🗑️</button>
+      <div class="food-img">
+        ${f.imgSrc?`<img src="${f.imgSrc}" alt="${f.name}">`:`<span>${f.emoji||'🍽️'}</span>`}
+      </div>
+      <div class="food-body">
+        <div class="food-name">${f.name}</div>
+        <div class="food-brand">${f.brand} · ${f.type}</div>
+        <div class="stars">${[1,2,3,4,5].map(s=>`<span class="star ${s<=f.rating?'filled':'empty'}" onclick="updateFoodRating(${pet.foods.indexOf(f)},${s})">${s<=f.rating?'⭐':'☆'}</span>`).join('')}</div>
+        <div class="rating-badge">⭐ ${f.rating} / 5</div>
+        ${f.note?`<div class="food-note">${f.note}</div>`:''}
+      </div>
+    </div>`).join('')+`<div class="food-add-card" onclick="openModal('addFood')"><span style="font-size:36px;">🍽️</span><span>Add Food Review</span></div>`;
+}
+
+function updateFoodRating(idx,rating){
+  getPet().foods[idx].rating=rating;
+  renderFood();
+}
+function removeFood(idx){if(confirm('Remove this food?')){getPet().foods.splice(idx,1);renderFood();renderOverview();}}
+
+// ---- HEALTH ----
+function renderHealth(){
+  const pet=getPet();
+  document.getElementById('weightLog').innerHTML=pet.weights.slice(-5).reverse().map(w=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 13px;background:var(--coral-light);border-radius:13px;margin-bottom:7px;">
+      <span style="font-size:18px;">⚖️</span><div style="flex:1;"><div style="font-weight:700;font-size:13px;">${w.val} kg</div>${w.note?`<div style="font-size:11px;color:var(--text-medium);">${w.note}</div>`:''}</div>
+      <div style="font-size:11px;color:var(--text-medium);">${w.date}</div>
+    </div>`).join('');
+  document.getElementById('healthNotes').innerHTML=pet.notes.map(n=>`
+    <div style="padding:11px 13px;background:var(--sky-light);border-radius:13px;margin-bottom:9px;border-left:4px solid var(--sky);">
+      <div style="font-size:12px;color:var(--text-dark);">${n.text}</div>
+      <div style="font-size:11px;color:var(--text-medium);margin-top:3px;">📅 ${n.date}</div>
+    </div>`).join('')||'<div style="color:var(--text-medium);font-size:13px;text-align:center;padding:14px;">No notes yet!</div>';
+  const v=pet.vet;
+  document.getElementById('vetInfo').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+      <div class="vax-row done" style="cursor:default;flex-direction:column;align-items:flex-start;gap:3px;"><div style="font-size:11px;color:var(--text-medium);">👨‍⚕️ Veterinarian</div><div style="font-weight:700;font-size:13px;">${v.name||'—'}</div><div style="font-size:11px;color:var(--text-medium);">🏥 ${v.clinic||'—'}</div></div>
+      <div class="vax-row upcoming" style="cursor:default;flex-direction:column;align-items:flex-start;gap:3px;"><div style="font-size:11px;color:var(--text-medium);">📞 Contact</div><div style="font-weight:700;font-size:13px;">${v.phone||'—'}</div><div style="font-size:11px;color:var(--text-medium);">📧 ${v.email||'—'}</div></div>
+    </div>`;
+}
+
+// ---- MODALS ----
+function openModal(id){
+  document.getElementById('modal-'+id).classList.add('open');
+  const today=new Date().toISOString().split('T')[0];
+  ['newVaxDate','newVaxDue','newDewormDate','newDewormDue','newPhotoDate','newWeightDate','newNoteDate'].forEach(f=>{const el=document.getElementById(f);if(el&&!el.value)el.value=today;});
+  if(id==='addPet'){updateBreedOptions();}
+  if(id==='addFood'){tempRating=0;updateStarPicker(0);}
+}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+
+// ---- PROFILE PIC ----
+function openProfilePicModal(idx){
+  pendingProfilePetIdx=idx;pendingProfileData=null;
+  const pet=state.pets[idx];
+  const prev=document.getElementById('profilePreview');
+  if(pet.profilePic){prev.innerHTML=`<img src="${pet.profilePic}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;}
+  else{prev.innerHTML=`<span style="font-size:40px;">${SPECIES_EMOJI[pet.species]||'🐾'}</span>`;}
+  document.getElementById('profilePicFile').value='';
+  openModal('profilePic');
+}
+document.getElementById('profilePicFile').addEventListener('change',function(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    pendingProfileData=ev.target.result;
+    document.getElementById('profilePreview').innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  };reader.readAsDataURL(file);
+});
+function saveProfilePic(){
+  if(!pendingProfileData)return alert('Please select a photo first!');
+  state.pets[pendingProfilePetIdx].profilePic=pendingProfileData;
+  closeModal('profilePic');renderPetSelector();
+}
+
+// ---- STAR PICKER ----
+function setRating(v){tempRating=v;document.getElementById('newFoodRating').value=v;updateStarPicker(v);}
+function updateStarPicker(v){
+  document.querySelectorAll('.star-pick').forEach(s=>{
+    const sv=parseInt(s.dataset.val);s.classList.toggle('on',sv<=v);
+  });
+}
+
+// ---- ADD PET ----
+function addPet(){
+  const name=document.getElementById('newPetName').value.trim();
+  if(!name)return alert('Please enter a pet name!');
+  const species=document.getElementById('newPetSpecies').value;
+  const breed=document.getElementById('newPetBreed').value;
+  const birthday=document.getElementById('newPetBday').value;
+  const weight=parseFloat(document.getElementById('newPetWeight').value)||0;
+  const gender=document.getElementById('newPetGender').value;
+  state.pets.push({id:Date.now(),name,species,breed,birthday,weight,gender,profilePic:null,vaccines:[],dewormings:[],gallery:[],foods:[],weights:[{val:weight,date:birthday||new Date().toISOString().split('T')[0],note:'Initial weight'}],notes:[],vet:{name:'',clinic:'',phone:'',email:''}});
+  state.activePet=state.pets.length-1;
+  closeModal('addPet');document.getElementById('newPetName').value='';
+  renderPetSelector();renderAll();
+}
+
+// ---- DELETE PET ----
+function promptDeletePet(){
+  if(state.pets.length===0)return alert('No pets to delete!');
+  const pet=getPet();
+  document.getElementById('confirmMsg').textContent=`Delete ${pet.name}? This cannot be undone! 💔`;
+  document.getElementById('confirmBar').classList.add('open');
+  document.querySelector('.confirm-bar').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function confirmDeletePet(){
+  state.pets.splice(state.activePet,1);
+  state.activePet=Math.max(0,state.activePet-1);
+  document.getElementById('confirmBar').classList.remove('open');
+  renderPetSelector();
+  if(state.pets.length>0){renderAll();}
+  else{document.querySelector('.container').innerHTML='<div style="text-align:center;padding:60px 20px;"><div style="font-size:64px;margin-bottom:16px;">🐾</div><div style="font-family:Fredoka One,cursive;font-size:24px;color:var(--text-dark);margin-bottom:8px;">No pets yet!</div><div style="color:var(--text-medium);margin-bottom:24px;">Add your first furry friend to get started.</div><button class="btn btn-primary" onclick="location.reload()">Start Fresh 🌟</button></div>';}
+}
+function cancelDelete(){document.getElementById('confirmBar').classList.remove('open');}
+
+// ---- VACCINE ----
+function addVaccine(){
+  const pet=getPet();
+  const name=document.getElementById('newVaxName').value;
+  const date=document.getElementById('newVaxDate').value;
+  const due=document.getElementById('newVaxDue').value;
+  const clinic=document.getElementById('newVaxClinic').value;
+  const batch=document.getElementById('newVaxBatch').value;
+  const notes=document.getElementById('newVaxNotes').value;
+  const today=new Date().toISOString().split('T')[0];
+  const status=date&&date<=today?(due&&due<today?'overdue':'done'):'upcoming';
+  pet.vaccines.push({id:Date.now(),name,date,due,clinic,batch,notes,status});
+  closeModal('addVaccine');renderAll();
+}
+function removeVaccine(idx){if(confirm('Remove this vaccine record?')){getPet().vaccines.splice(idx,1);renderAll();}}
+
+// ---- DEWORM ----
+function addDeworm(){
+  const pet=getPet();
+  const med=document.getElementById('newDewormMed').value;
+  const date=document.getElementById('newDewormDate').value;
+  const due=document.getElementById('newDewormDue').value;
+  const dose=document.getElementById('newDewormDose').value;
+  const notes=document.getElementById('newDewormNotes').value;
+  const today=new Date().toISOString().split('T')[0];
+  const status=date&&date<=today?'done':'next';
+  pet.dewormings.push({id:Date.now(),med,date,due,dose,notes,status});
+  closeModal('addDeworm');renderAll();
+}
+
+// ---- GALLERY ----
+function addPhoto(){
+  const pet=getPet();
+  const caption=document.getElementById('newPhotoCaption').value||'My pet!';
+  const cat=document.getElementById('newPhotoCategory').value;
+  const date=document.getElementById('newPhotoDate').value;
+  const file=document.getElementById('newPhotoFile').files[0];
+  const colors=['#FFD6E7','#D4F5D7','#D0EFFF','#EDD9FF','#FFF3B0','#FFE3D8'];
+  const emojis=['📸','🐾','💖','🌟','🎉','🌸'];
+  if(file){
+    const reader=new FileReader();
+    reader.onload=e=>{pet.gallery.push({id:Date.now(),emoji:'🖼️',caption,category:cat,date,color:colors[Math.floor(Math.random()*colors.length)],imgSrc:e.target.result});closeModal('addPhoto');renderGallery();renderOverview();};
+    reader.readAsDataURL(file);
+  } else {
+    pet.gallery.push({id:Date.now(),emoji:emojis[Math.floor(Math.random()*emojis.length)],caption,category:cat,date,color:colors[Math.floor(Math.random()*colors.length)]});
+    closeModal('addPhoto');renderGallery();renderOverview();
+  }
+}
+function removeGallery(idx){if(confirm('Remove photo?')){getPet().gallery.splice(idx,1);renderGallery();renderOverview();}}
+
+// ---- FOOD ----
+function addFood(){
+  const pet=getPet();
+  const name=document.getElementById('newFoodName').value.trim();
+  if(!name)return alert('Please enter a food name!');
+  const brand=document.getElementById('newFoodBrand').value;
+  const type=document.getElementById('newFoodType').value;
+  const rating=parseInt(document.getElementById('newFoodRating').value)||0;
+  const note=document.getElementById('newFoodNote').value;
+  const file=document.getElementById('newFoodFile').files[0];
+  const foodEmojis={'Dry Kibble':'🍚','Wet Food':'🥣','Raw Food':'🥩','Freeze-Dried':'❄️','Treats':'🦴','Supplement':'💊'};
+  const colors=['#FFD6E7','#D4F5D7','#D0EFFF','#EDD9FF','#FFF3B0','#FFE3D8'];
+  if(file){
+    const reader=new FileReader();
+    reader.onload=e=>{pet.foods.push({id:Date.now(),name,brand,type,rating,note,imgSrc:e.target.result,color:colors[Math.floor(Math.random()*colors.length)],emoji:foodEmojis[type]||'🍽️'});closeModal('addFood');renderFood();renderOverview();};
+    reader.readAsDataURL(file);
+  } else {
+    pet.foods.push({id:Date.now(),name,brand,type,rating,note,imgSrc:null,color:colors[Math.floor(Math.random()*colors.length)],emoji:foodEmojis[type]||'🍽️'});
+    closeModal('addFood');renderFood();renderOverview();
+  }
+}
+
+// ---- WEIGHT / NOTE ----
+function addWeight(){
+  const pet=getPet();
+  const val=parseFloat(document.getElementById('newWeightVal').value);
+  const date=document.getElementById('newWeightDate').value;
+  const note=document.getElementById('newWeightNote').value;
+  if(!val||!date)return alert('Please fill in weight and date!');
+  pet.weight=val;pet.weights.push({val,date,note});
+  closeModal('addWeight');renderAll();
+}
+function addNote(){
+  const pet=getPet();
+  const text=document.getElementById('newNoteText').value.trim();
+  const date=document.getElementById('newNoteDate').value;
+  if(!text)return alert('Please write a note!');
+  pet.notes.unshift({text,date});closeModal('addNote');renderHealth();
+}
+
+init();
+</script>
+</body>
+</html>
