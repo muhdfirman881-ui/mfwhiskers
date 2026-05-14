@@ -511,50 +511,58 @@
 
 <input type="file" id="hiddenAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
 
-<!-- Firebase scripts -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+<script>
+(async () => {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const { getDatabase, ref, set, get } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAurrTWfEXRcXZ2pBmsNkpB8716-13xBp8",
-    authDomain: "mfwhiskers-14946.firebaseapp.com",
-    databaseURL: "https://mfwhiskers-14946-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "mfwhiskers-14946",
-    storageBucket: "mfwhiskers-14946.firebasestorage.app",
-    messagingSenderId: "984533711194",
-    appId: "1:984533711194:web:b77cbb0b962e1fc4031b63"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyAurrTWfEXRcXZ2pBmsNkpB8716-13xBp8",
+      authDomain: "mfwhiskers-14946.firebaseapp.com",
+      databaseURL: "https://mfwhiskers-14946-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "mfwhiskers-14946",
+      storageBucket: "mfwhiskers-14946.firebasestorage.app",
+      messagingSenderId: "984533711194",
+      appId: "1:984533711194:web:b77cbb0b962e1fc4031b63"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  window.db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    window.db = getDatabase(app);
 
-  console.log("Firebase connected");
+    console.log("Firebase connected");
 
-  // Function to save state to database
-  window.saveState = async function() {
-    try {
-      await set(ref(window.db, 'pets'), state);
-      console.log("State saved to database");
-    } catch (error) {
-      console.error("Error saving state:", error);
-    }
-  };
-
-  // Function to load state from database
-  window.loadState = async function() {
-    try {
-      const snapshot = await get(ref(window.db, 'pets'));
-      if (snapshot.exists()) {
-        state = snapshot.val();
-        console.log("State loaded from database");
-      } else {
-        console.log("No data in database, using default state");
+    // Function to save state to database
+    window.saveState = async function() {
+      try {
+        await set(ref(window.db, 'pets'), state);
+        console.log("State saved to database");
+      } catch (error) {
+        console.error("Error saving state:", error);
       }
-    } catch (error) {
-      console.error("Error loading state:", error);
-    }
-  };
+    };
+
+    // Function to load state from database
+    window.loadState = async function() {
+      try {
+        const snapshot = await get(ref(window.db, 'pets'));
+        if (snapshot.exists()) {
+          state = snapshot.val();
+          console.log("State loaded from database");
+        } else {
+          console.log("No data in database, using default state");
+        }
+      } catch (error) {
+        console.error("Error loading state:", error);
+      }
+    };
+
+    await init();
+  } catch (error) {
+    console.error("Firebase load error:", error);
+    init(); // fallback to local
+  }
+})();
 </script>
 
 <script>
@@ -998,8 +1006,6 @@ function addNote(){
   pet.notes.unshift({text,date});closeModal('addNote');renderHealth();
   saveState();
 }
-
-init();
 </script>
 </body>
 </html>
