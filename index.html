@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MF Whiskers 🐱</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MF Whiskers">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#C77DFF">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#C77DFF">
 <!-- iOS home screen icon (SVG → canvas → data URI via inline script below) -->
 <link id="appleIcon" rel="apple-touch-icon">
 <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22MF%20Whiskers%22%2C%22short_name%22%3A%22Whiskers%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F5EEFF%22%2C%22theme_color%22%3A%22%23C77DFF%22%7D">
@@ -100,10 +102,10 @@ body::before {
 header {
   position:relative;z-index:10;
   background:linear-gradient(135deg,#FF6B9D 0%,#C77DFF 45%,#6ECFFF 100%);
-  padding:14px 28px 14px 28px;
-  display:flex;align-items:center;justify-content:space-between;
   box-shadow:0 6px 32px rgba(180,80,200,0.28);
   overflow:hidden;
+  /* iOS safe area for status bar / Dynamic Island */
+  padding-top:env(safe-area-inset-top,0px);
 }
 header::before {
   content:'';position:absolute;inset:0;
@@ -438,6 +440,9 @@ header::before {
     radial-gradient(ellipse 65% 65% at 92% 82%, #FFF3B0 0%, transparent 60%);
   background-color:#F5EEFF;
   animation:meshShift 18s ease-in-out infinite alternate;
+  /* safe area for iOS */
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
 }
 .login-card {
   background:rgba(255,255,255,0.88);
@@ -541,12 +546,216 @@ header::before {
 }
 .food-edit:hover{background:var(--yellow-light);color:#9A7000;}
 
-@media(max-width:600px){
-  header{padding:10px 14px;}
-  .logo{font-size:24px;}
-  .container{padding:14px 12px;}
-  .grid-2{grid-template-columns:1fr;}
-  .pet-section-actions{flex-direction:column;gap:5px;}
+/* ── BOTTOM NAV (mobile tabs) ── */
+.bottom-nav {
+  display:none;
+  position:fixed;
+  bottom:0;left:0;right:0;
+  z-index:50;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(199,125,255,0.15);
+  box-shadow:0 -4px 24px rgba(100,60,180,0.12);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-left:env(safe-area-inset-left,0px);
+  padding-right:env(safe-area-inset-right,0px);
+}
+.bottom-nav-inner {
+  display:flex;align-items:stretch;
+  height:56px;
+}
+.bnav-item {
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2px;border:none;background:transparent;
+  cursor:pointer;padding:6px 2px;
+  color:var(--text-light);
+  font-family:'Baloo 2',cursive;font-size:9px;font-weight:700;
+  transition:color 0.2s;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  min-width:44px;
+}
+.bnav-item .bnav-icon { font-size:20px;line-height:1; }
+.bnav-item.active { color:var(--pink); }
+.bnav-item.active .bnav-icon { transform:scale(1.15); }
+.bnav-fab {
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--pink),var(--lavender));
+  color:white;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+  box-shadow:0 4px 18px rgba(199,125,255,0.5);
+  margin-top:-14px;
+  flex-shrink:0;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+@media(max-width:640px){
+  /* ── SAFE AREA BODY ── */
+  body { -webkit-text-size-adjust:100%; }
+
+  /* ── HEADER ── */
+  header { padding:0; }
+  header { padding-top:env(safe-area-inset-top,0px); }
+  .header-inner {
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;
+  }
+  .logo { font-size:22px; gap:6px; }
+  .logo .paw { font-size:26px; }
+  .logo-sub { font-size:9px; letter-spacing:2px; }
+  .header-actions-mobile { display:flex; gap:6px; align-items:center; }
+  .user-chip { padding:5px 10px; font-size:11px; }
+  .logout-btn { padding:5px 10px; font-size:11px; }
+  #userMgmtBtn { padding:5px 10px; font-size:11px; }
+
+  /* ── CONTAINER ── */
+  .container {
+    padding:12px 12px;
+    padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));
+  }
+
+  /* ── HIDE DESKTOP TABS, SHOW BOTTOM NAV ── */
+  .tabs { display:none !important; }
+  .bottom-nav { display:block; }
+
+  /* ── PET SECTION ── */
+  .pet-section { padding:12px 14px; border-radius:20px; }
+  .pet-section-header { flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .pet-section-actions { flex-direction:row; gap:6px; }
+  .btn-add-pet { padding:7px 12px; font-size:12px; }
+  .btn-del-pet { padding:7px 10px; font-size:12px; }
+  .pet-card { min-width:160px; padding:10px 12px; }
+  .pet-info h3 { font-size:13px; }
+  .pet-info p { font-size:10px; }
+
+  /* ── GRIDS ── */
+  .grid-2 { grid-template-columns:1fr; gap:12px; }
+  .grid-3 { grid-template-columns:repeat(3,1fr); gap:8px; }
+
+  /* ── OVERVIEW STATS ── */
+  .overview-stat { padding:12px 8px; border-radius:16px; }
+  .overview-stat .num { font-size:26px; }
+  .overview-stat .label { font-size:10px; }
+  .overview-stat .emoji { font-size:22px; }
+
+  /* ── DECO BANNER ── */
+  .deco-banner { padding:14px 16px; }
+  .deco-banner .text h2 { font-size:17px; }
+  .deco-banner .text p { font-size:11px; }
+  .deco-banner .emojis { font-size:28px; gap:5px; }
+  .deco-banner::after { display:none; }
+
+  /* ── CARDS ── */
+  .card { padding:16px; border-radius:18px; }
+  .card-title { font-size:15px; }
+  .section-title { font-size:18px; margin-bottom:12px; }
+
+  /* ── VAX ROWS ── */
+  .vax-row { flex-wrap:wrap; gap:8px; padding:10px 12px; }
+  .vax-name { font-size:12px; }
+  .vax-date { font-size:10px; }
+  .vax-status { font-size:10px; }
+
+  /* ── FOOD GRID ── */
+  .food-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .food-name { font-size:13px; }
+  .food-brand { font-size:11px; }
+  .food-body { padding:10px; }
+  .food-add-card { min-height:140px; padding:20px 10px; }
+
+  /* ── GALLERY ── */
+  .gallery-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
+
+  /* ── SECTION HEADERS ── */
+  [style*="display:flex;justify-content:space-between"] {
+    flex-wrap:wrap;gap:8px;
+  }
+
+  /* ── PANEL SPACING ── */
+  .panel { padding-bottom:8px; }
+
+  /* ── CONFIRM BAR ── */
+  .confirm-bar { flex-direction:column; gap:10px; padding:14px; border-radius:18px; }
+  .confirm-btns { width:100%; display:flex; gap:8px; }
+  .cbtn { flex:1; padding:10px; font-size:13px; }
+
+  /* ── MODALS ── */
+  .modal-bg { align-items:flex-end; }
+  .modal {
+    width:100%;max-width:100%;
+    border-radius:28px 28px 0 0;
+    padding:20px 18px;
+    padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+    max-height:92vh;
+    animation:slideUp 0.3s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes slideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
+  .modal-title { font-size:18px; margin-bottom:14px; }
+  .modal-actions { flex-direction:row; }
+  .modal-actions .btn { flex:1; justify-content:center; }
+  .form-row input,.form-row select,.form-row textarea {
+    font-size:16px !important; /* prevents iOS zoom on focus */
+    padding:11px 14px;
+  }
+  /* Modal drag handle */
+  .modal::before {
+    content:'';display:block;
+    width:36px;height:4px;
+    background:rgba(180,160,220,0.4);
+    border-radius:2px;
+    margin:-8px auto 14px;
+  }
+
+  /* ── LOGIN ── */
+  .login-card {
+    border-radius:28px 28px 0 0;
+    width:100%;max-width:100%;
+    position:fixed;bottom:0;left:0;right:0;
+    padding:28px 22px;
+    padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));
+    max-height:94vh;overflow-y:auto;
+    animation:slideUp 0.4s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 -12px 48px rgba(100,60,200,0.2);
+  }
+  #loginScreen { align-items:flex-end; }
+  .login-mascot { font-size:52px; }
+  .login-title { font-size:24px; }
+  .login-field input { font-size:16px !important; }
+
+  /* ── BUTTONS TOUCH ── */
+  .btn, .btn-add-pet, .btn-del-pet, .cbtn, .login-btn {
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+    min-height:44px;
+  }
+  .tab { min-height:44px; }
+
+  /* ── DEWORM TIMELINE ── */
+  .deworm-timeline { padding-left:20px; }
+  .deworm-dot { left:-27px; }
+  .deworm-event { padding:10px 12px; font-size:12px; }
+
+  /* ── SCROLL SNAP PET CARDS ── */
+  .pet-scroll {
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+  }
+  .pet-card, .add-pet-card { scroll-snap-align:start; }
+
+  /* ── USER MGMT ── */
+  #modal-userMgmt .modal { max-height:88vh; }
+}
+
+/* Tablet adjustments */
+@media(min-width:641px) and (max-width:900px){
+  .container { padding:18px 16px; }
+  .grid-3 { grid-template-columns:repeat(3,1fr); }
+  .food-grid { grid-template-columns:repeat(3,1fr); }
+  .gallery-grid { grid-template-columns:repeat(4,1fr); }
 }
 </style>
 </head>
@@ -591,21 +800,45 @@ header::before {
     <div class="hd-bubble" style="width:60px;height:60px;top:10px;right:60px;opacity:0.06;"></div>
     <div class="hd-bubble" style="width:40px;height:40px;bottom:-10px;right:20px;opacity:0.08;"></div>
   </div>
-  <div class="logo-wrap">
-    <div class="logo">
-      <span class="paw">🐾</span>
-      <span>MF Whiskers</span>
+  <div class="header-inner" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 28px;position:relative;z-index:1;">
+    <div class="logo-wrap">
+      <div class="logo">
+        <span class="paw">🐾</span>
+        <span>MF Whiskers</span>
+      </div>
+      <span class="logo-sub">✦ pet care companion ✦</span>
     </div>
-    <span class="logo-sub">✦ pet care companion ✦</span>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;position:relative;z-index:1;">
-    <div class="user-chip" id="headerUserChip">👋 admin</div>
-    <button class="logout-btn" id="userMgmtBtn" onclick="openUserMgmt()" style="display:none;">👥 Users</button>
-    <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="user-chip" id="headerUserChip">👋 admin</div>
+      <button class="logout-btn" id="userMgmtBtn" onclick="openUserMgmt()" style="display:none;">👥 Users</button>
+      <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+    </div>
   </div>
 </header>
 
-<div class="container">
+<!-- BOTTOM NAV (mobile only) -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item active" onclick="switchTab('overview')" id="bnav-overview">
+      <span class="bnav-icon">🏠</span><span>Home</span>
+    </button>
+    <button class="bnav-item" onclick="switchTab('vaccines')" id="bnav-vaccines">
+      <span class="bnav-icon">💉</span><span>Vaccines</span>
+    </button>
+    <button class="bnav-item" onclick="switchTab('deworming')" id="bnav-deworming">
+      <span class="bnav-icon">🪱</span><span>Deworm</span>
+    </button>
+    <button class="bnav-item" onclick="switchTab('gallery')" id="bnav-gallery">
+      <span class="bnav-icon">📸</span><span>Gallery</span>
+    </button>
+    <button class="bnav-item" onclick="switchTab('food')" id="bnav-food">
+      <span class="bnav-icon">🍽️</span><span>Food</span>
+    </button>
+    <button class="bnav-item" onclick="switchTab('health')" id="bnav-health">
+      <span class="bnav-icon">❤️</span><span>Health</span>
+    </button>
+  </div>
+</nav>
 
   <!-- Confirm bar -->
   <div class="confirm-bar" id="confirmBar">
@@ -1482,6 +1715,12 @@ function switchTab(tab){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.getElementById('panel-'+tab).classList.add('active');
+  // sync bottom nav
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  const bn=document.getElementById('bnav-'+tab);
+  if(bn) bn.classList.add('active');
+  // scroll to top of content on tab switch (mobile UX)
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 /* ═══════════════════════════════════════
