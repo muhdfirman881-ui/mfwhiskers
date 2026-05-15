@@ -2,8 +2,40 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MF Whiskers 🐱</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MF Whiskers">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#C77DFF">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#C77DFF">
+<!-- iOS home screen icon (SVG → canvas → data URI via inline script below) -->
+<link id="appleIcon" rel="apple-touch-icon">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22MF%20Whiskers%22%2C%22short_name%22%3A%22Whiskers%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F5EEFF%22%2C%22theme_color%22%3A%22%23C77DFF%22%7D">
+<script>
+// Generate a cute 512×512 icon and set it as apple-touch-icon
+(function(){
+  const c=document.createElement('canvas');c.width=512;c.height=512;
+  const ctx=c.getContext('2d');
+  // gradient background
+  const g=ctx.createLinearGradient(0,0,512,512);
+  g.addColorStop(0,'#FF6B9D');g.addColorStop(0.5,'#C77DFF');g.addColorStop(1,'#6ECFFF');
+  ctx.fillStyle=g;
+  // rounded rect
+  const r=90;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(512-r,0);ctx.quadraticCurveTo(512,0,512,r);
+  ctx.lineTo(512,512-r);ctx.quadraticCurveTo(512,512,512-r,512);ctx.lineTo(r,512);
+  ctx.quadraticCurveTo(0,512,0,512-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);
+  ctx.closePath();ctx.fill();
+  // white soft circle
+  ctx.fillStyle='rgba(255,255,255,0.18)';ctx.beginPath();ctx.arc(256,220,155,0,Math.PI*2);ctx.fill();
+  // paw emoji
+  ctx.font='220px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🐾',256,240);
+  // text
+  ctx.fillStyle='white';ctx.font='bold 52px sans-serif';ctx.fillText('MF Whiskers',256,400);
+  document.getElementById('appleIcon').href=c.toDataURL('image/png');
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Baloo+2:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -70,10 +102,10 @@ body::before {
 header {
   position:relative;z-index:10;
   background:linear-gradient(135deg,#FF6B9D 0%,#C77DFF 45%,#6ECFFF 100%);
-  padding:14px 28px 14px 28px;
-  display:flex;align-items:center;justify-content:space-between;
   box-shadow:0 6px 32px rgba(180,80,200,0.28);
   overflow:hidden;
+  /* iOS safe area for status bar / Dynamic Island */
+  padding-top:env(safe-area-inset-top,0px);
 }
 header::before {
   content:'';position:absolute;inset:0;
@@ -408,6 +440,9 @@ header::before {
     radial-gradient(ellipse 65% 65% at 92% 82%, #FFF3B0 0%, transparent 60%);
   background-color:#F5EEFF;
   animation:meshShift 18s ease-in-out infinite alternate;
+  /* safe area for iOS */
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
 }
 .login-card {
   background:rgba(255,255,255,0.88);
@@ -511,12 +546,242 @@ header::before {
 }
 .food-edit:hover{background:var(--yellow-light);color:#9A7000;}
 
-@media(max-width:600px){
-  header{padding:10px 14px;}
-  .logo{font-size:24px;}
-  .container{padding:14px 12px;}
-  .grid-2{grid-template-columns:1fr;}
-  .pet-section-actions{flex-direction:column;gap:5px;}
+/* ── FAMILY SECTION ── */
+.parent-card-img-wrap:hover .avatar-hover-overlay,
+[onclick*="openParentPic"]:hover .avatar-hover-overlay { opacity:1 !important; }
+
+.family-pet-chip {
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--lavender-light);color:var(--lavender-deep);
+  padding:5px 12px;border-radius:50px;
+  font-family:'Baloo 2',cursive;font-size:12px;font-weight:700;
+}
+.family-pet-mini {
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:white;border-radius:16px;padding:10px 12px;
+  box-shadow:var(--shadow);min-width:72px;text-align:center;
+  border:2px solid transparent;transition:all 0.2s;
+}
+.family-pet-mini:hover { border-color:var(--lavender); transform:translateY(-2px); }
+.family-pet-mini .mini-avatar {
+  width:46px;height:46px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;overflow:hidden;flex-shrink:0;
+}
+.family-pet-mini .mini-avatar img { width:100%;height:100%;object-fit:cover;border-radius:50%; }
+.family-pet-mini .mini-name { font-family:'Baloo 2',cursive;font-weight:700;font-size:11px;color:var(--text-dark); }
+.family-pet-mini .mini-breed { font-size:9px;color:var(--text-medium); }
+
+/* ── BOTTOM NAV (mobile tabs) ── */
+.bottom-nav {
+  display:none;
+  position:fixed;
+  bottom:0;left:0;right:0;
+  z-index:50;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(199,125,255,0.15);
+  box-shadow:0 -4px 24px rgba(100,60,180,0.12);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-left:env(safe-area-inset-left,0px);
+  padding-right:env(safe-area-inset-right,0px);
+}
+.bottom-nav-inner {
+  display:flex;align-items:stretch;
+  height:56px;
+}
+.bnav-item {
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2px;border:none;background:transparent;
+  cursor:pointer;padding:6px 2px;
+  color:var(--text-light);
+  font-family:'Baloo 2',cursive;font-size:9px;font-weight:700;
+  transition:color 0.2s;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  min-width:44px;
+}
+.bnav-item .bnav-icon { font-size:20px;line-height:1; }
+.bnav-item.active { color:var(--pink); }
+.bnav-item.active .bnav-icon { transform:scale(1.15); }
+.bnav-fab {
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--pink),var(--lavender));
+  color:white;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+  box-shadow:0 4px 18px rgba(199,125,255,0.5);
+  margin-top:-14px;
+  flex-shrink:0;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+@media(max-width:640px){
+  /* ── SAFE AREA BODY ── */
+  body { -webkit-text-size-adjust:100%; }
+
+  /* ── HEADER ── */
+  header { padding:0; }
+  header { padding-top:env(safe-area-inset-top,0px); }
+  .header-inner {
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;
+  }
+  .logo { font-size:22px; gap:6px; }
+  .logo .paw { font-size:26px; }
+  .logo-sub { font-size:9px; letter-spacing:2px; }
+  .header-actions-mobile { display:flex; gap:6px; align-items:center; }
+  .user-chip { padding:5px 10px; font-size:11px; }
+  .logout-btn { padding:5px 10px; font-size:11px; }
+  #userMgmtBtn { padding:5px 10px; font-size:11px; }
+
+  /* ── CONTAINER ── */
+  .container {
+    padding:12px 12px;
+    padding-bottom:calc(70px + env(safe-area-inset-bottom,0px));
+  }
+
+  /* ── HIDE DESKTOP TABS, SHOW BOTTOM NAV ── */
+  .tabs { display:none !important; }
+  .bottom-nav { display:block; }
+
+  /* ── PET SECTION ── */
+  .pet-section { padding:12px 14px; border-radius:20px; }
+  .pet-section-header { flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .pet-section-actions { flex-direction:row; gap:6px; }
+  .btn-add-pet { padding:7px 12px; font-size:12px; }
+  .btn-del-pet { padding:7px 10px; font-size:12px; }
+  .pet-card { min-width:160px; padding:10px 12px; }
+  .pet-info h3 { font-size:13px; }
+  .pet-info p { font-size:10px; }
+
+  /* ── GRIDS ── */
+  .grid-2 { grid-template-columns:1fr; gap:12px; }
+  .grid-3 { grid-template-columns:repeat(3,1fr); gap:8px; }
+
+  /* ── OVERVIEW STATS ── */
+  .overview-stat { padding:12px 8px; border-radius:16px; }
+  .overview-stat .num { font-size:26px; }
+  .overview-stat .label { font-size:10px; }
+  .overview-stat .emoji { font-size:22px; }
+
+  /* ── DECO BANNER ── */
+  .deco-banner { padding:14px 16px; }
+  .deco-banner .text h2 { font-size:17px; }
+  .deco-banner .text p { font-size:11px; }
+  .deco-banner .emojis { font-size:28px; gap:5px; }
+  .deco-banner::after { display:none; }
+
+  /* ── CARDS ── */
+  .card { padding:16px; border-radius:18px; }
+  .card-title { font-size:15px; }
+  .section-title { font-size:18px; margin-bottom:12px; }
+
+  /* ── VAX ROWS ── */
+  .vax-row { flex-wrap:wrap; gap:8px; padding:10px 12px; }
+  .vax-name { font-size:12px; }
+  .vax-date { font-size:10px; }
+  .vax-status { font-size:10px; }
+
+  /* ── FOOD GRID ── */
+  .food-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .food-name { font-size:13px; }
+  .food-brand { font-size:11px; }
+  .food-body { padding:10px; }
+  .food-add-card { min-height:140px; padding:20px 10px; }
+
+  /* ── GALLERY ── */
+  .gallery-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
+
+  /* ── SECTION HEADERS ── */
+  [style*="display:flex;justify-content:space-between"] {
+    flex-wrap:wrap;gap:8px;
+  }
+
+  /* ── PANEL SPACING ── */
+  .panel { padding-bottom:8px; }
+
+  /* ── CONFIRM BAR ── */
+  .confirm-bar { flex-direction:column; gap:10px; padding:14px; border-radius:18px; }
+  .confirm-btns { width:100%; display:flex; gap:8px; }
+  .cbtn { flex:1; padding:10px; font-size:13px; }
+
+  /* ── MODALS ── */
+  .modal-bg { align-items:flex-end; }
+  .modal {
+    width:100%;max-width:100%;
+    border-radius:28px 28px 0 0;
+    padding:20px 18px;
+    padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+    max-height:92vh;
+    animation:slideUp 0.3s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes slideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
+  .modal-title { font-size:18px; margin-bottom:14px; }
+  .modal-actions { flex-direction:row; }
+  .modal-actions .btn { flex:1; justify-content:center; }
+  .form-row input,.form-row select,.form-row textarea {
+    font-size:16px !important; /* prevents iOS zoom on focus */
+    padding:11px 14px;
+  }
+  /* Modal drag handle */
+  .modal::before {
+    content:'';display:block;
+    width:36px;height:4px;
+    background:rgba(180,160,220,0.4);
+    border-radius:2px;
+    margin:-8px auto 14px;
+  }
+
+  /* ── LOGIN ── */
+  .login-card {
+    border-radius:28px 28px 0 0;
+    width:100%;max-width:100%;
+    position:fixed;bottom:0;left:0;right:0;
+    padding:28px 22px;
+    padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));
+    max-height:94vh;overflow-y:auto;
+    animation:slideUp 0.4s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 -12px 48px rgba(100,60,200,0.2);
+  }
+  #loginScreen { align-items:flex-end; }
+  .login-mascot { font-size:52px; }
+  .login-title { font-size:24px; }
+  .login-field input { font-size:16px !important; }
+
+  /* ── BUTTONS TOUCH ── */
+  .btn, .btn-add-pet, .btn-del-pet, .cbtn, .login-btn {
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+    min-height:44px;
+  }
+  .tab { min-height:44px; }
+
+  /* ── DEWORM TIMELINE ── */
+  .deworm-timeline { padding-left:20px; }
+  .deworm-dot { left:-27px; }
+  .deworm-event { padding:10px 12px; font-size:12px; }
+
+  /* ── SCROLL SNAP PET CARDS ── */
+  .pet-scroll {
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+  }
+  .pet-card, .add-pet-card { scroll-snap-align:start; }
+
+  /* ── USER MGMT ── */
+  #modal-userMgmt .modal { max-height:88vh; }
+}
+
+/* Tablet adjustments */
+@media(min-width:641px) and (max-width:900px){
+  .container { padding:18px 16px; }
+  .grid-3 { grid-template-columns:repeat(3,1fr); }
+  .food-grid { grid-template-columns:repeat(3,1fr); }
+  .gallery-grid { grid-template-columns:repeat(4,1fr); }
 }
 </style>
 </head>
@@ -561,20 +826,45 @@ header::before {
     <div class="hd-bubble" style="width:60px;height:60px;top:10px;right:60px;opacity:0.06;"></div>
     <div class="hd-bubble" style="width:40px;height:40px;bottom:-10px;right:20px;opacity:0.08;"></div>
   </div>
-  <div class="logo-wrap">
-    <div class="logo">
-      <span class="paw">🐾</span>
-      <span>MF Whiskers</span>
+  <div class="header-inner" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 28px;position:relative;z-index:1;">
+    <div class="logo-wrap">
+      <div class="logo">
+        <span class="paw">🐾</span>
+        <span>MF Whiskers</span>
+      </div>
+      <span class="logo-sub">✦ pet care companion ✦</span>
     </div>
-    <span class="logo-sub">✦ pet care companion ✦</span>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;position:relative;z-index:1;">
-    <div class="user-chip">👋 admin</div>
-    <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="user-chip" id="headerUserChip">👋 admin</div>
+      <button class="logout-btn" id="userMgmtBtn" onclick="openUserMgmt()" style="display:none;">👥 Users</button>
+      <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+    </div>
   </div>
 </header>
 
-<div class="container">
+<!-- BOTTOM NAV (mobile only) -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item active" onclick="switchTab('overview')" id="bnav-overview">
+      <span class="bnav-icon">🏠</span><span>Home</span>
+    </button>
+    <button class="bnav-item" onclick="switchTab('vaccines')" id="bnav-vaccines">
+      <span class="bnav-icon">💉</span><span>Vaccines</span>
+    </button>
+    <button class="bnav-item" onclick="switchTab('gallery')" id="bnav-gallery">
+      <span class="bnav-icon">📸</span><span>Gallery</span>
+    </button>
+    <button class="bnav-item" onclick="switchTab('food')" id="bnav-food">
+      <span class="bnav-icon">🍽️</span><span>Food</span>
+    </button>
+    <button class="bnav-item" onclick="switchTab('health')" id="bnav-health">
+      <span class="bnav-icon">❤️</span><span>Health</span>
+    </button>
+    <button class="bnav-item" onclick="switchTab('family')" id="bnav-family">
+      <span class="bnav-icon">💑</span><span>Family</span>
+    </button>
+  </div>
+</nav>
 
   <!-- Confirm bar -->
   <div class="confirm-bar" id="confirmBar">
@@ -607,6 +897,7 @@ header::before {
     <button class="tab" onclick="switchTab('gallery')" id="tab-gallery">📸 Gallery</button>
     <button class="tab" onclick="switchTab('food')" id="tab-food">🍽️ Food</button>
     <button class="tab" onclick="switchTab('health')" id="tab-health">❤️ Health</button>
+    <button class="tab" onclick="switchTab('family')" id="tab-family">💑 Family</button>
   </div>
 
   <!-- OVERVIEW -->
@@ -719,9 +1010,160 @@ header::before {
     </div>
   </div>
 
+  <!-- FAMILY -->
+  <div class="panel" id="panel-family">
+    <div class="deco-banner" style="background:linear-gradient(135deg,rgba(255,214,231,0.85),rgba(255,243,176,0.85),rgba(212,245,215,0.85));">
+      <div class="text">
+        <h2 style="font-family:'Baloo 2',cursive;font-size:21px;font-weight:800;">💑 Our Fur Family</h2>
+        <p style="font-size:12px;color:var(--text-medium);margin-top:3px;">The hoomans behind all the love 🐾</p>
+      </div>
+      <div style="font-size:36px;display:flex;gap:6px;flex-shrink:0;">
+        <span class="pulse">💖</span><span class="spin" style="animation-duration:6s;">🌸</span>
+      </div>
+    </div>
+
+    <!-- Parent cards -->
+    <div class="grid-2" style="margin-bottom:20px;">
+      <!-- MOM -->
+      <div class="card" style="border:2px solid rgba(255,107,157,0.25);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;right:0;font-size:60px;opacity:0.06;line-height:1;">💐</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+          <div id="momAvatarWrap" style="width:70px;height:70px;border-radius:50%;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#FFD6E7,#FFC4E6);display:flex;align-items:center;justify-content:center;font-size:34px;border:3px solid rgba(255,107,157,0.4);cursor:pointer;position:relative;" onclick="openParentPic('mom')" title="Set photo">
+            <span id="momAvatarEmoji">👩</span>
+            <img id="momAvatarImg" src="" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:50%;">
+            <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0;transition:0.2s;font-size:16px;color:white;" class="avatar-hover-overlay">📷</div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:11px;color:var(--pink);font-family:'Baloo 2',cursive;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">🌸 Cat Mom</div>
+            <div id="momName" style="font-family:'Baloo 2',cursive;font-weight:800;font-size:20px;color:var(--text-dark);">—</div>
+            <div id="momNickname" style="font-size:12px;color:var(--text-medium);margin-top:2px;font-style:italic;"></div>
+          </div>
+        </div>
+        <div id="momBio" style="font-size:13px;color:var(--text-medium);line-height:1.6;margin-bottom:12px;min-height:20px;"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="momFavPets"></div>
+        ${`<button class="btn btn-edit" style="margin-top:12px;font-size:12px;" onclick="openEditFamily('mom')">✏️ Edit Mom's Info</button>`}
+      </div>
+
+      <!-- DAD -->
+      <div class="card" style="border:2px solid rgba(79,195,247,0.25);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;right:0;font-size:60px;opacity:0.06;line-height:1;">⚽</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+          <div id="dadAvatarWrap" style="width:70px;height:70px;border-radius:50%;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#D0EFFF,#C3E8FF);display:flex;align-items:center;justify-content:center;font-size:34px;border:3px solid rgba(79,195,247,0.4);cursor:pointer;position:relative;" onclick="openParentPic('dad')" title="Set photo">
+            <span id="dadAvatarEmoji">👨</span>
+            <img id="dadAvatarImg" src="" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:50%;">
+            <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:0;transition:0.2s;font-size:16px;color:white;" class="avatar-hover-overlay">📷</div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:11px;color:var(--sky);font-family:'Baloo 2',cursive;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">🐾 Cat Dad</div>
+            <div id="dadName" style="font-family:'Baloo 2',cursive;font-weight:800;font-size:20px;color:var(--text-dark);">—</div>
+            <div id="dadNickname" style="font-size:12px;color:var(--text-medium);margin-top:2px;font-style:italic;"></div>
+          </div>
+        </div>
+        <div id="dadBio" style="font-size:13px;color:var(--text-medium);line-height:1.6;margin-bottom:12px;min-height:20px;"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="dadFavPets"></div>
+        ${`<button class="btn btn-edit" style="margin-top:12px;font-size:12px;" onclick="openEditFamily('dad')">✏️ Edit Dad's Info</button>`}
+      </div>
+    </div>
+
+    <!-- Family stats row -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title" style="color:var(--lavender);">🏡 Our Little Family</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
+        <div style="text-align:center;">
+          <div style="font-family:'Baloo 2',cursive;font-size:28px;font-weight:800;color:var(--pink);" id="familyTotalPets">0</div>
+          <div style="font-size:11px;color:var(--text-medium);font-weight:700;">Fur Babies</div>
+        </div>
+        <div style="flex:1;min-width:180px;">
+          <div style="font-family:'Baloo 2',cursive;font-size:13px;font-weight:800;color:var(--text-dark);margin-bottom:6px;" id="familyNameDisplay">Our Family</div>
+          <div style="font-size:12px;color:var(--text-medium);" id="familySinceDisplay"></div>
+        </div>
+        <button class="btn btn-edit" style="font-size:12px;" onclick="openEditFamily('general')">✏️ Edit Family Info</button>
+      </div>
+      <!-- All pets mini gallery -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;" id="allPetsMini"></div>
+    </div>
+
+    <!-- Family notes -->
+    <div class="card">
+      <div class="card-title" style="color:var(--coral);">📖 Our Story</div>
+      <div id="familyStory" style="font-size:13px;color:var(--text-medium);line-height:1.8;min-height:40px;"></div>
+      <button class="btn btn-secondary" style="margin-top:10px;font-size:12px;" onclick="openEditFamily('story')">✏️ Edit Our Story</button>
+    </div>
+  </div>
+
 </div><!-- /container -->
 
 <!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- EDIT FAMILY - MOM -->
+<div class="modal-bg" id="modal-editFamilyMom">
+  <div class="modal">
+    <div class="modal-title">🌸 Edit Mom's Info</div>
+    <div class="form-row"><label>Full Name</label><input type="text" id="editMomName" placeholder="e.g. Sarah"></div>
+    <div class="form-row"><label>Nickname / Alias</label><input type="text" id="editMomNickname" placeholder="e.g. The Treat Giver 😂"></div>
+    <div class="form-row"><label>Bio (a fun sentence about her)</label><textarea id="editMomBio" rows="3" placeholder="e.g. Chief snuggler and midnight feeder. Guilty of buying too many cat toys."></textarea></div>
+    <div class="form-row"><label>Favourite Pet</label><select id="editMomFavPet"></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('editFamilyMom')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFamily('mom')">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT FAMILY - DAD -->
+<div class="modal-bg" id="modal-editFamilyDad">
+  <div class="modal">
+    <div class="modal-title">🐾 Edit Dad's Info</div>
+    <div class="form-row"><label>Full Name</label><input type="text" id="editDadName" placeholder="e.g. Marcus"></div>
+    <div class="form-row"><label>Nickname / Alias</label><input type="text" id="editDadNickname" placeholder="e.g. The Reluctant Cat Dad 😅"></div>
+    <div class="form-row"><label>Bio (a fun sentence about him)</label><textarea id="editDadBio" rows="3" placeholder="e.g. Claims to not like cats. Caught whispering sweet nothings to them at 2am."></textarea></div>
+    <div class="form-row"><label>Favourite Pet</label><select id="editDadFavPet"></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('editFamilyDad')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFamily('dad')">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT FAMILY - GENERAL -->
+<div class="modal-bg" id="modal-editFamilyGeneral">
+  <div class="modal">
+    <div class="modal-title">🏡 Edit Family Info</div>
+    <div class="form-row"><label>Family Name</label><input type="text" id="editFamilyName" placeholder="e.g. The Whiskers Family"></div>
+    <div class="form-row"><label>Cat Parents Since</label><input type="date" id="editFamilySince"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('editFamilyGeneral')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFamily('general')">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT FAMILY - STORY -->
+<div class="modal-bg" id="modal-editFamilyStory">
+  <div class="modal">
+    <div class="modal-title">📖 Our Story</div>
+    <div class="form-row"><label>Tell your family's story</label><textarea id="editFamilyStoryText" rows="6" placeholder="How did you become cat parents? How did you find your fur babies? Share the love story! 💕"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('editFamilyStory')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFamily('story')">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- PARENT PROFILE PIC -->
+<div class="modal-bg" id="modal-parentPic">
+  <div class="modal">
+    <div class="modal-title" id="parentPicTitle">📷 Set Photo</div>
+    <div class="form-row"><label>Upload Photo</label><input type="file" id="parentPicFile" accept="image/*"></div>
+    <div style="text-align:center;margin:12px 0;">
+      <div id="parentPicPreview" style="width:90px;height:90px;border-radius:50%;margin:0 auto;overflow:hidden;background:linear-gradient(135deg,#FFD6E7,#EDD9FF);display:flex;align-items:center;justify-content:center;font-size:36px;border:4px solid var(--lavender);">👤</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('parentPic')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveParentPic()">💾 Set Photo!</button>
+    </div>
+  </div>
+</div>
 
 <!-- ADD PET -->
 <div class="modal-bg" id="modal-addPet">
@@ -927,9 +1369,211 @@ header::before {
   </div>
 </div>
 
+<!-- EDIT FOOD -->
+<div class="modal-bg" id="modal-editFood">
+  <div class="modal">
+    <div class="modal-title">✏️ Edit Food Review</div>
+    <div class="form-row"><label>Food Name</label><input type="text" id="editFoodName" placeholder="e.g. Royal Canin Adult Indoor"></div>
+    <div class="form-row"><label>Brand</label><input type="text" id="editFoodBrand" placeholder="e.g. Royal Canin"></div>
+    <div class="form-row"><label>Type</label>
+      <select id="editFoodType">
+        <option>Dry Kibble</option><option>Wet Food</option><option>Raw Food</option>
+        <option>Freeze-Dried</option><option>Treats</option><option>Supplement</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Rating (tap stars)</label>
+      <div class="star-picker" id="editStarPicker">
+        <span class="star-pick" data-val="1" onclick="setEditRating(1)">⭐</span>
+        <span class="star-pick" data-val="2" onclick="setEditRating(2)">⭐</span>
+        <span class="star-pick" data-val="3" onclick="setEditRating(3)">⭐</span>
+        <span class="star-pick" data-val="4" onclick="setEditRating(4)">⭐</span>
+        <span class="star-pick" data-val="5" onclick="setEditRating(5)">⭐</span>
+      </div>
+      <input type="hidden" id="editFoodRating" value="0">
+    </div>
+    <div class="form-row"><label>Notes / Review</label><textarea id="editFoodNote" rows="2" placeholder="e.g. Loves this! Finishes every bowl 😻"></textarea></div>
+    <div class="form-row"><label>Change Photo (optional)</label><input type="file" id="editFoodFile" accept="image/*"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('editFood')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditFood()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MANAGEMENT (admin only) -->
+<div class="modal-bg" id="modal-userMgmt">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-title">👥 User Management</div>
+    <div style="margin-bottom:16px;">
+      <div id="userList"></div>
+    </div>
+    <div style="background:var(--lavender-light);border-radius:16px;padding:16px;margin-top:4px;">
+      <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:var(--text-dark);margin-bottom:12px;">➕ Add New User</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-row" style="margin-bottom:0;"><label>Username</label><input type="text" id="newUserName" placeholder="username"></div>
+        <div class="form-row" style="margin-bottom:0;"><label>Password</label><input type="password" id="newUserPass" placeholder="password"></div>
+      </div>
+      <div class="form-row" style="margin-top:10px;"><label>Role</label>
+        <select id="newUserRole">
+          <option value="admin">👑 Admin (full access)</option>
+          <option value="viewer">👀 Viewer (read only)</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="margin-top:4px;width:100%;justify-content:center;" onclick="addUser()">➕ Add User</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('userMgmt')">Close</button>
+    </div>
+  </div>
+</div>
+
 <input type="file" id="hiddenAvatarInput" accept="image/*" style="display:none">
 
 <script>
+/* ═══════════════════════════════════════
+   AUTH
+═══════════════════════════════════════ */
+// users stored in Firebase at /users, seeded with default admin
+let currentUser = null; // { username, role }
+
+// Default users (used only if Firebase has nothing yet)
+const DEFAULT_USERS = [
+  { username:'admin', password:'1726', role:'admin' }
+];
+
+async function loadUsers() {
+  if (window.db) {
+    try {
+      const {ref,get,set} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+      const snap = await get(ref(window.db,'users'));
+      if (!snap.exists()) {
+        // Seed default admin on first run
+        await set(ref(window.db,'users'), DEFAULT_USERS);
+        return DEFAULT_USERS;
+      }
+      const raw = snap.val();
+      return Array.isArray(raw) ? raw : Object.values(raw);
+    } catch(e){ console.error('loadUsers error',e); return DEFAULT_USERS; }
+  } else {
+    try {
+      const raw = localStorage.getItem('mfw_users');
+      return raw ? JSON.parse(raw) : DEFAULT_USERS;
+    } catch(e){ return DEFAULT_USERS; }
+  }
+}
+
+async function saveUsers(users) {
+  if (window.db) {
+    try {
+      const {ref,set} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+      await set(ref(window.db,'users'), users);
+    } catch(e){ console.error('saveUsers error',e); }
+  } else {
+    try { localStorage.setItem('mfw_users', JSON.stringify(users)); } catch(e){}
+  }
+}
+
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  err.classList.remove('show');
+  const users = await loadUsers();
+  const match = users.find(x => x.username === u && x.password === p);
+  if (!match) {
+    err.classList.add('show');
+    document.getElementById('loginPass').value='';
+    return;
+  }
+  currentUser = { username: match.username, role: match.role };
+  // Store session
+  try { sessionStorage.setItem('mfw_session', JSON.stringify(currentUser)); } catch(e){}
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('headerUserChip').textContent = `👋 ${currentUser.username}`;
+  // Show Users button only for admin
+  document.getElementById('userMgmtBtn').style.display = currentUser.role==='admin' ? 'flex' : 'none';
+  await init();
+}
+
+function doLogout() {
+  currentUser = null;
+  try { sessionStorage.removeItem('mfw_session'); } catch(e){}
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginError').classList.remove('show');
+}
+
+async function checkSession() {
+  try {
+    const raw = sessionStorage.getItem('mfw_session');
+    if (raw) {
+      const sess = JSON.parse(raw);
+      // Verify user still exists
+      const users = await loadUsers();
+      const match = users.find(x => x.username===sess.username);
+      if (match) {
+        currentUser = { username: match.username, role: match.role };
+        document.getElementById('loginScreen').style.display='none';
+        document.getElementById('headerUserChip').textContent = `👋 ${currentUser.username}`;
+        document.getElementById('userMgmtBtn').style.display = currentUser.role==='admin' ? 'flex' : 'none';
+        return true;
+      }
+    }
+  } catch(e){}
+  return false;
+}
+
+/* User Management */
+async function openUserMgmt() {
+  if (currentUser?.role !== 'admin') return;
+  await renderUserList();
+  openModal('userMgmt');
+}
+
+async function renderUserList() {
+  const users = await loadUsers();
+  const el = document.getElementById('userList');
+  if (!users.length) { el.innerHTML='<div style="text-align:center;color:var(--text-medium);padding:12px;">No users yet.</div>'; return; }
+  el.innerHTML = users.map((u,i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${u.role==='admin'?'var(--lavender-light)':'var(--sky-light)'};border-radius:14px;margin-bottom:8px;">
+      <span style="font-size:22px;">${u.role==='admin'?'👑':'👀'}</span>
+      <div style="flex:1;">
+        <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:var(--text-dark);">${u.username}</div>
+        <div style="font-size:11px;color:var(--text-medium);">${u.role==='admin'?'Admin · Full Access':'Viewer · Read Only'}</div>
+      </div>
+      ${u.username==='admin'
+        ? `<span class="stat-chip chip-lavender" style="font-size:11px;">Protected</span>`
+        : `<button onclick="deleteUser(${i})" style="background:#FFE8E8;border:none;color:#FF4757;padding:5px 12px;border-radius:50px;cursor:pointer;font-family:'Baloo 2',cursive;font-weight:700;font-size:12px;">🗑️ Delete</button>`
+      }
+    </div>`).join('');
+}
+
+async function addUser() {
+  const username = document.getElementById('newUserName').value.trim();
+  const password = document.getElementById('newUserPass').value;
+  const role = document.getElementById('newUserRole').value;
+  if (!username) return alert('Please enter a username!');
+  if (!password) return alert('Please enter a password!');
+  const users = await loadUsers();
+  if (users.find(u => u.username===username)) return alert('Username already exists!');
+  users.push({ username, password, role });
+  await saveUsers(users);
+  document.getElementById('newUserName').value='';
+  document.getElementById('newUserPass').value='';
+  await renderUserList();
+}
+
+async function deleteUser(idx) {
+  const users = await loadUsers();
+  if (users[idx]?.username==='admin') return alert('Cannot delete the admin account!');
+  if (!confirm(`Delete user "${users[idx]?.username}"?`)) return;
+  users.splice(idx,1);
+  await saveUsers(users);
+  await renderUserList();
+}
+
 /* ═══════════════════════════════════════
    CONSTANTS & HELPERS
 ═══════════════════════════════════════ */
@@ -977,6 +1621,9 @@ function normaliseState(s){
   if(!s) return s;
   s.pets=toArray(s.pets).map(normalisePet);
   if(typeof s.activePet!=='number') s.activePet=0;
+  if(!s.family) s.family = JSON.parse(JSON.stringify(DEFAULT_FAMILY));
+  if(!s.family.mom) s.family.mom = {name:'',nickname:'',bio:'',favPet:'',photo:null};
+  if(!s.family.dad) s.family.dad = {name:'',nickname:'',bio:'',favPet:'',photo:null};
   return s;
 }
 
@@ -985,6 +1632,12 @@ function normaliseState(s){
 ═══════════════════════════════════════ */
 let state={
   activePet:0,
+  family: {
+    name:'Our Whiskers Family', since:'',
+    mom:{ name:'', nickname:'', bio:'', favPet:'', photo:null },
+    dad:{ name:'', nickname:'', bio:'', favPet:'', photo:null },
+    story:''
+  },
   pets:[
     {id:1,name:'Mochi',species:'dog',breed:'Shih Tzu',birthday:'2022-04-15',weight:5.2,gender:'male',profilePic:null,
      vaccines:[
@@ -1107,7 +1760,14 @@ async function init(){
     console.warn("Firebase unavailable, using localStorage:",e);
     window.db=null;
   }
-  await init();
+  // Check for existing session; if valid skip login screen
+  const hasSession = await checkSession();
+  if (hasSession) {
+    await init();
+  } else {
+    // Just hide the app loading overlay; login screen is already visible
+    document.getElementById('loadingOverlay').style.display='none';
+  }
 })();
 
 /* ═══════════════════════════════════════
@@ -1242,12 +1902,18 @@ function switchTab(tab){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.getElementById('panel-'+tab).classList.add('active');
+  // sync bottom nav
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  const bn=document.getElementById('bnav-'+tab);
+  if(bn) bn.classList.add('active');
+  // scroll to top of content on tab switch (mobile UX)
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 /* ═══════════════════════════════════════
    RENDER ALL
 ═══════════════════════════════════════ */
-function renderAll(){renderOverview();renderVaccines();renderDeworming();renderGallery();renderFood();renderHealth();}
+function renderAll(){renderOverview();renderVaccines();renderDeworming();renderGallery();renderFood();renderHealth();renderFamily();}
 
 function renderOverview(){
   const pet=getPet();
@@ -1321,27 +1987,76 @@ function renderGallery(){
 }
 
 let currentFoodFilter='all';
+let editingFoodIdx=null;
+let editFoodRatingVal=0;
+
 function filterFood(v){currentFoodFilter=v;renderFood();}
 function renderFood(){
   const pet=getPet();
-  let foods=pet.foods;
-  if(currentFoodFilter!=='all') foods=foods.filter(f=>f.rating>=currentFoodFilter);
-  document.getElementById('foodGrid').innerHTML=
+  const isAdmin = currentUser?.role === 'admin';
+  let foods=pet.foods||[];
+  if(currentFoodFilter!=='all') foods=foods.filter(f=>f.rating>=Number(currentFoodFilter));
+  const grid=document.getElementById('foodGrid');
+  if(!grid) return;
+  grid.innerHTML=
     foods.map(f=>{
       const ri=pet.foods.indexOf(f);
       return `<div class="food-card">
-        <button class="food-del" onclick="removeFood(${ri})">🗑️</button>
-        <div class="food-img">${f.imgSrc?`<img src="${f.imgSrc}" alt="${f.name}">`:`<span>${f.emoji||'🍽️'}</span>`}</div>
+        ${isAdmin ? `<button class="food-edit" onclick="openEditFood(${ri})">✏️ Edit</button>` : ''}
+        ${isAdmin ? `<button class="food-del" onclick="removeFood(${ri})">🗑️</button>` : ''}
+        <div class="food-img">${f.imgSrc?`<img src="${f.imgSrc}" alt="${escHtml(f.name)}">`:`<span>${f.emoji||'🍽️'}</span>`}</div>
         <div class="food-body">
-          <div class="food-name">${f.name}</div>
-          <div class="food-brand">${f.brand} · ${f.type}</div>
-          <div class="stars">${[1,2,3,4,5].map(s=>`<span class="star ${s<=f.rating?'filled':'empty'}" onclick="updateFoodRating(${ri},${s})">${s<=f.rating?'⭐':'☆'}</span>`).join('')}</div>
-          <div class="rating-badge">⭐ ${f.rating} / 5</div>
-          ${f.note?`<div class="food-note">${f.note}</div>`:''}
+          <div class="food-name">${escHtml(f.name)}</div>
+          <div class="food-brand">${escHtml(f.brand||'')} · ${escHtml(f.type||'')}</div>
+          <div class="stars">${[1,2,3,4,5].map(s=>`<span class="star ${s<=f.rating?'filled':'empty'}" onclick="${isAdmin?`updateFoodRating(${ri},${s})`:''}">${s<=f.rating?'⭐':'☆'}</span>`).join('')}</div>
+          <div class="rating-badge">⭐ ${f.rating||0} / 5</div>
+          ${f.note?`<div class="food-note">${escHtml(f.note)}</div>`:''}
         </div>
       </div>`;
     }).join('')+
-    `<div class="food-add-card" onclick="openModal('addFood')"><span style="font-size:36px;">🍽️</span><span>Add Food Review</span></div>`;
+    (isAdmin ? `<div class="food-add-card" onclick="openModal('addFood')"><span style="font-size:36px;">🍽️</span><span>Add Food Review</span></div>` : (foods.length===0?'<div style="text-align:center;padding:40px;color:var(--text-medium);font-size:14px;">🍽️ No food reviews yet!</div>':''));
+}
+
+// XSS-safe HTML escape helper
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function openEditFood(idx) {
+  editingFoodIdx = idx;
+  const f = getPet().foods[idx];
+  document.getElementById('editFoodName').value = f.name || '';
+  document.getElementById('editFoodBrand').value = f.brand || '';
+  document.getElementById('editFoodType').value = f.type || 'Dry Kibble';
+  editFoodRatingVal = f.rating || 0;
+  document.getElementById('editFoodRating').value = editFoodRatingVal;
+  updateEditStarPicker(editFoodRatingVal);
+  document.getElementById('editFoodNote').value = f.note || '';
+  document.getElementById('editFoodFile').value = '';
+  openModal('editFood');
+}
+
+function setEditRating(v){ editFoodRatingVal=v; document.getElementById('editFoodRating').value=v; updateEditStarPicker(v); }
+function updateEditStarPicker(v){ document.querySelectorAll('#editStarPicker .star-pick').forEach(s=>{ s.classList.toggle('on', parseInt(s.dataset.val)<=v); }); }
+
+function saveEditFood() {
+  if (editingFoodIdx === null) return;
+  const pet = getPet();
+  const f = pet.foods[editingFoodIdx];
+  f.name  = document.getElementById('editFoodName').value.trim() || f.name;
+  f.brand = document.getElementById('editFoodBrand').value;
+  f.type  = document.getElementById('editFoodType').value;
+  f.rating= parseInt(document.getElementById('editFoodRating').value) || f.rating;
+  f.note  = document.getElementById('editFoodNote').value;
+  // Update emoji to match new type
+  const foodEmojis={'Dry Kibble':'🍚','Wet Food':'🥣','Raw Food':'🥩','Freeze-Dried':'❄️','Treats':'🦴','Supplement':'💊'};
+  f.emoji = foodEmojis[f.type] || f.emoji;
+  const file = document.getElementById('editFoodFile').files[0];
+  if (file) {
+    const r = new FileReader();
+    r.onload = e => { f.imgSrc=e.target.result; closeModal('editFood'); renderFood(); saveState(); };
+    r.readAsDataURL(file);
+  } else {
+    closeModal('editFood'); renderFood(); saveState();
+  }
 }
 
 function updateFoodRating(idx,rating){getPet().foods[idx].rating=rating;renderFood();saveState();}
@@ -1412,7 +2127,7 @@ function saveProfilePic(){
 }
 
 function setRating(v){tempRating=v;document.getElementById('newFoodRating').value=v;updateStarPicker(v);}
-function updateStarPicker(v){document.querySelectorAll('.star-pick').forEach(s=>{const sv=parseInt(s.dataset.val);s.classList.toggle('on',sv<=v);});}
+function updateStarPicker(v){document.querySelectorAll('#starPicker .star-pick').forEach(s=>{const sv=parseInt(s.dataset.val);s.classList.toggle('on',sv<=v);});}
 
 function addPet(){
   const name=document.getElementById('newPetName').value.trim();
@@ -1515,37 +2230,173 @@ function addNote(){
   if(!text)return alert('Please write a note!');
   pet.notes.unshift({text,date});closeModal('addNote');renderHealth();saveState();
 }
-  /* ═══════════════════════════════════════
-   LOGIN & LOGOUT LOGIC
-═══════════════════════════════════════ */
-function doLogin() {
-  const user = document.getElementById('loginUser').value.trim();
-  const pass = document.getElementById('loginPass').value.trim();
-  const errorMsg = document.getElementById('loginError');
 
-  // Simple demo authentication (change these as needed!)
-  if (user === 'admin' && pass === 'password') {
-    // Hide the login screen on success
-    document.getElementById('loginScreen').style.display = 'none';
-    errorMsg.classList.remove('show');
-  } else {
-    // Show error and trigger the shake animation
-    errorMsg.classList.add('show');
-    
-    // Remove the class after the animation finishes so it can shake again next time
-    setTimeout(() => {
-      errorMsg.classList.remove('show');
-    }, 400);
+/* ═══════════════════════════════════════
+   FAMILY
+═══════════════════════════════════════ */
+const DEFAULT_FAMILY = {
+  name:'Our Whiskers Family',
+  since:'',
+  mom:{ name:'', nickname:'', bio:'', favPet:'', photo:null },
+  dad:{ name:'', nickname:'', bio:'', favPet:'', photo:null },
+  story:''
+};
+
+function getFamily(){ return state.family || DEFAULT_FAMILY; }
+
+function renderFamily(){
+  const f = getFamily();
+  const pets = state.pets || [];
+
+  // Mom
+  document.getElementById('momName').textContent = f.mom?.name || '—';
+  document.getElementById('momNickname').textContent = f.mom?.nickname ? `"${f.mom.nickname}"` : '';
+  document.getElementById('momBio').textContent = f.mom?.bio || '';
+  const momImg = document.getElementById('momAvatarImg');
+  const momEmoji = document.getElementById('momAvatarEmoji');
+  if(f.mom?.photo){ momImg.src=f.mom.photo; momImg.style.display='block'; momEmoji.style.display='none'; }
+  else { momImg.style.display='none'; momEmoji.style.display='block'; }
+  const momFavEl = document.getElementById('momFavPets');
+  momFavEl.innerHTML = '';
+  if(f.mom?.favPet){
+    const p = pets.find(x=>x.id==f.mom.favPet||x.name==f.mom.favPet);
+    if(p) momFavEl.innerHTML = `<span class="family-pet-chip">${SPECIES_EMOJI[p.species]||'🐾'} ${p.name} is my fave!</span>`;
+  }
+
+  // Dad
+  document.getElementById('dadName').textContent = f.dad?.name || '—';
+  document.getElementById('dadNickname').textContent = f.dad?.nickname ? `"${f.dad.nickname}"` : '';
+  document.getElementById('dadBio').textContent = f.dad?.bio || '';
+  const dadImg = document.getElementById('dadAvatarImg');
+  const dadEmoji = document.getElementById('dadAvatarEmoji');
+  if(f.dad?.photo){ dadImg.src=f.dad.photo; dadImg.style.display='block'; dadEmoji.style.display='none'; }
+  else { dadImg.style.display='none'; dadEmoji.style.display='block'; }
+  const dadFavEl = document.getElementById('dadFavPets');
+  dadFavEl.innerHTML = '';
+  if(f.dad?.favPet){
+    const p = pets.find(x=>x.id==f.dad.favPet||x.name==f.dad.favPet);
+    if(p) dadFavEl.innerHTML = `<span class="family-pet-chip">${SPECIES_EMOJI[p.species]||'🐾'} ${p.name} is my fave!</span>`;
+  }
+
+  // General
+  document.getElementById('familyTotalPets').textContent = pets.length;
+  document.getElementById('familyNameDisplay').textContent = f.name || 'Our Family';
+  const sinceEl = document.getElementById('familySinceDisplay');
+  if(f.since){
+    const yrs = Math.floor((new Date()-new Date(f.since))/(1000*60*60*24*365));
+    sinceEl.textContent = `Cat parents since ${f.since}${yrs>0?' ('+yrs+' year'+(yrs>1?'s':'')+' of love! 💕)':''}`;
+  } else { sinceEl.textContent=''; }
+
+  // Story
+  document.getElementById('familyStory').textContent = f.story || 'No story written yet… tell us how your family came together! 💕';
+
+  // All pets mini
+  const miniEl = document.getElementById('allPetsMini');
+  miniEl.innerHTML = pets.map(p=>{
+    const ava = p.profilePic
+      ? `<img src="${p.profilePic}" alt="${escHtml(p.name)}">`
+      : SPECIES_EMOJI[p.species]||'🐾';
+    return `<div class="family-pet-mini">
+      <div class="mini-avatar" style="background:${BG_COLORS[pets.indexOf(p)%BG_COLORS.length]}">${p.profilePic?`<img src="${p.profilePic}" alt="${escHtml(p.name)}">`:SPECIES_EMOJI[p.species]||'🐾'}</div>
+      <div class="mini-name">${escHtml(p.name)}</div>
+      <div class="mini-breed">${escHtml(p.breed||p.species)}</div>
+    </div>`;
+  }).join('') || '<div style="color:var(--text-medium);font-size:13px;">No pets added yet!</div>';
+}
+
+function populateFavPetOptions(selectId, currentVal){
+  const sel = document.getElementById(selectId);
+  sel.innerHTML = '<option value="">— None selected —</option>' +
+    (state.pets||[]).map(p=>`<option value="${p.id}" ${(currentVal==p.id||currentVal==p.name)?'selected':''}>${SPECIES_EMOJI[p.species]||'🐾'} ${escHtml(p.name)}</option>`).join('');
+}
+
+function openEditFamily(section){
+  const f = getFamily();
+  if(section==='mom'){
+    document.getElementById('editMomName').value = f.mom?.name||'';
+    document.getElementById('editMomNickname').value = f.mom?.nickname||'';
+    document.getElementById('editMomBio').value = f.mom?.bio||'';
+    populateFavPetOptions('editMomFavPet', f.mom?.favPet);
+    openModal('editFamilyMom');
+  } else if(section==='dad'){
+    document.getElementById('editDadName').value = f.dad?.name||'';
+    document.getElementById('editDadNickname').value = f.dad?.nickname||'';
+    document.getElementById('editDadBio').value = f.dad?.bio||'';
+    populateFavPetOptions('editDadFavPet', f.dad?.favPet);
+    openModal('editFamilyDad');
+  } else if(section==='general'){
+    document.getElementById('editFamilyName').value = f.name||'';
+    document.getElementById('editFamilySince').value = f.since||'';
+    openModal('editFamilyGeneral');
+  } else if(section==='story'){
+    document.getElementById('editFamilyStoryText').value = f.story||'';
+    openModal('editFamilyStory');
   }
 }
 
-function doLogout() {
-  // Show the login screen again and clear the inputs
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('loginUser').value = '';
-  document.getElementById('loginPass').value = '';
+function saveFamily(section){
+  if(!state.family) state.family = JSON.parse(JSON.stringify(DEFAULT_FAMILY));
+  const f = state.family;
+  if(section==='mom'){
+    f.mom.name     = document.getElementById('editMomName').value.trim();
+    f.mom.nickname = document.getElementById('editMomNickname').value.trim();
+    f.mom.bio      = document.getElementById('editMomBio').value.trim();
+    const favSel   = document.getElementById('editMomFavPet');
+    f.mom.favPet   = favSel.value;
+    closeModal('editFamilyMom');
+  } else if(section==='dad'){
+    f.dad.name     = document.getElementById('editDadName').value.trim();
+    f.dad.nickname = document.getElementById('editDadNickname').value.trim();
+    f.dad.bio      = document.getElementById('editDadBio').value.trim();
+    const favSel   = document.getElementById('editDadFavPet');
+    f.dad.favPet   = favSel.value;
+    closeModal('editFamilyDad');
+  } else if(section==='general'){
+    f.name  = document.getElementById('editFamilyName').value.trim();
+    f.since = document.getElementById('editFamilySince').value;
+    closeModal('editFamilyGeneral');
+  } else if(section==='story'){
+    f.story = document.getElementById('editFamilyStoryText').value.trim();
+    closeModal('editFamilyStory');
+  }
+  renderFamily();
+  saveState();
 }
 
+// Parent profile pic
+let pendingParentPicSide = null;
+let pendingParentPicData = null;
+
+function openParentPic(side){
+  pendingParentPicSide = side;
+  pendingParentPicData = null;
+  const f = getFamily();
+  const prev = document.getElementById('parentPicPreview');
+  const photo = side==='mom' ? f.mom?.photo : f.dad?.photo;
+  document.getElementById('parentPicTitle').textContent = side==='mom' ? '🌸 Set Mom\'s Photo' : '🐾 Set Dad\'s Photo';
+  if(photo){ prev.innerHTML=`<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`; }
+  else { prev.innerHTML = side==='mom'?'👩':'👨'; }
+  document.getElementById('parentPicFile').value='';
+  openModal('parentPic');
+}
+document.getElementById('parentPicFile').addEventListener('change',function(e){
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    pendingParentPicData=ev.target.result;
+    document.getElementById('parentPicPreview').innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  };
+  r.readAsDataURL(file);
+});
+function saveParentPic(){
+  if(!pendingParentPicData) return alert('Please select a photo first!');
+  if(!state.family) state.family = JSON.parse(JSON.stringify(DEFAULT_FAMILY));
+  if(pendingParentPicSide==='mom') state.family.mom.photo = pendingParentPicData;
+  else state.family.dad.photo = pendingParentPicData;
+  closeModal('parentPic');
+  renderFamily();
+  saveState();
+}
 </script>
 </body>
 </html>
