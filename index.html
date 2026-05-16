@@ -546,6 +546,179 @@ header::before {
 }
 .food-edit:hover{background:var(--yellow-light);color:#9A7000;}
 
+/* ── ROUTINE DASHBOARD CARD (on home screen) ── */
+.routine-dashboard-card {
+  background:linear-gradient(135deg,#C77DFF 0%,#FF6B9D 55%,#FF9A5C 100%);
+  border-radius:26px;
+  padding:22px 20px 18px;
+  margin-bottom:18px;
+  box-shadow:0 8px 32px rgba(199,125,255,0.38);
+  cursor:pointer;
+  transition:transform 0.2s,box-shadow 0.2s;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  position:relative;
+  overflow:hidden;
+}
+.routine-dashboard-card::before {
+  content:'';position:absolute;
+  top:-30px;right:-30px;
+  width:120px;height:120px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.1);
+}
+.routine-dashboard-card::after {
+  content:'';position:absolute;
+  bottom:-20px;left:-20px;
+  width:80px;height:80px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.07);
+}
+.routine-dashboard-card:active { transform:scale(0.98); box-shadow:0 4px 16px rgba(199,125,255,0.3); }
+.rdc-header {
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;
+}
+.rdc-title {
+  font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;
+  color:white;margin-bottom:3px;
+  text-shadow:0 1px 4px rgba(0,0,0,0.15);
+}
+.rdc-sub {
+  font-family:'Baloo 2',cursive;font-size:12px;font-weight:600;
+  color:rgba(255,255,255,0.85);
+}
+.rdc-ring-wrap {
+  position:relative;width:60px;height:60px;flex-shrink:0;
+}
+.rdc-ring { width:60px;height:60px; }
+.rdc-ring circle { transition:stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1); }
+.rdc-pct {
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Baloo 2',cursive;font-size:13px;font-weight:800;
+  color:white;
+}
+.rdc-tasks-preview {
+  display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;
+}
+.rdc-task-chip {
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,0.2);
+  border:1px solid rgba(255,255,255,0.3);
+  border-radius:50px;padding:5px 10px;
+  font-family:'Baloo 2',cursive;font-size:11px;font-weight:700;
+  color:white;backdrop-filter:blur(4px);
+  transition:all 0.2s;
+}
+.rdc-task-chip.done {
+  background:rgba(107,203,119,0.35);
+  border-color:rgba(107,203,119,0.5);
+  text-decoration:line-through;
+  opacity:0.75;
+}
+.rdc-check { font-size:10px;color:rgba(255,255,255,0.9); }
+.rdc-more {
+  font-family:'Baloo 2',cursive;font-size:11px;font-weight:700;
+  color:rgba(255,255,255,0.7);align-self:center;
+}
+.rdc-empty {
+  font-family:'Baloo 2',cursive;font-size:12px;font-weight:600;
+  color:rgba(255,255,255,0.7);font-style:italic;
+}
+.rdc-tap-hint {
+  font-family:'Baloo 2',cursive;font-size:11px;font-weight:700;
+  color:rgba(255,255,255,0.65);text-align:right;
+  letter-spacing:0.3px;
+}
+
+/* ── BOTTOM NAV HERO ROUTINE BUTTON ── */
+.bnav-routine-hero {
+  flex:1.6; /* wider than regular items */
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  border:none;background:transparent;cursor:pointer;
+  padding:0 4px;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  position:relative;
+}
+.bnav-routine-pill {
+  display:flex;flex-direction:column;align-items:center;
+  background:linear-gradient(135deg,#C77DFF,#FF6B9D);
+  border-radius:20px;
+  padding:8px 16px 7px;
+  gap:2px;
+  box-shadow:0 4px 16px rgba(199,125,255,0.45);
+  margin-top:-20px; /* pops above the nav bar */
+  min-width:72px;
+  transition:transform 0.15s,box-shadow 0.15s;
+}
+.bnav-routine-hero:active .bnav-routine-pill { transform:scale(0.93); }
+.bnav-routine-hero.active .bnav-routine-pill {
+  box-shadow:0 6px 24px rgba(199,125,255,0.65);
+  transform:scale(1.04);
+}
+.bnav-routine-label {
+  font-family:'Baloo 2',cursive;font-size:10px;font-weight:800;
+  color:white;letter-spacing:0.3px;
+}
+
+/* ── VET CARD — premium standalone ── */
+.vet-card {
+  background:linear-gradient(135deg,rgba(237,217,255,0.6),rgba(208,239,255,0.6));
+  backdrop-filter:blur(12px);
+  border:1.5px solid rgba(199,125,255,0.2);
+  border-radius:22px;
+  padding:18px 20px;
+  box-shadow:var(--shadow);
+}
+.vet-card-header {
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  flex-wrap:wrap;
+}
+.vet-detail-row {
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:14px;margin-bottom:8px;
+  background:rgba(255,255,255,0.7);
+  backdrop-filter:blur(8px);
+  transition:all 0.2s;
+}
+.vet-detail-row:last-child { margin-bottom:0; }
+.vet-detail-icon { font-size:20px;flex-shrink:0; }
+.vet-detail-label { font-size:10px;color:var(--text-medium);font-family:'Baloo 2',cursive;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
+.vet-detail-value { font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:var(--text-dark); }
+
+/* ── PET SECTION → CONTENT gap ── */
+.pet-section {
+  margin-bottom:0 !important;
+  border-bottom-left-radius:0 !important;
+  border-bottom-right-radius:0 !important;
+  border-bottom:none !important;
+  box-shadow:0 2px 0 rgba(199,125,255,0.08),var(--shadow) !important;
+}
+.tabs {
+  border-top-left-radius:0 !important;
+  border-top-right-radius:0 !important;
+  margin-top:0 !important;
+  border-top:1.5px solid rgba(199,125,255,0.1);
+}
+
+/* ── PREMIUM ACTIVE TAB INDICATOR ── */
+.bnav-item.active .bnav-icon {
+  filter:drop-shadow(0 2px 6px rgba(255,107,157,0.5));
+}
+.bnav-item::before {
+  content:'';display:block;
+  height:3px;width:0;
+  background:linear-gradient(90deg,var(--pink),var(--lavender));
+  border-radius:0 0 3px 3px;
+  position:absolute;top:0;
+  transition:width 0.3s cubic-bezier(.4,0,.2,1);
+}
+.bnav-item { position:relative; }
+.bnav-item.active::before { width:60%; left:20%; }
+
 /* ── FAMILY SECTION ── */
 .parent-card-img-wrap:hover .avatar-hover-overlay,
 [onclick*="openParentPic"]:hover .avatar-hover-overlay { opacity:1 !important; }
@@ -756,26 +929,27 @@ header::before {
 
   /* ── PANEL HEADERS ── */
   .panel-header {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:14px;
-    gap:10px;
-    flex-wrap:nowrap; /* never wrap — FAB handles mobile add action */
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:14px;gap:10px;flex-wrap:nowrap;
   }
   .panel-header .section-title { margin-bottom:0; font-size:17px; flex-shrink:1; min-width:0; }
   .panel-header .btn { flex-shrink:0; font-size:12px; padding:8px 12px; white-space:nowrap; }
 
-  /* ── CONTAINER — guaranteed safe padding on ANY device ── */
+  /* ══════════════════════════════════════════
+     BOTTOM CLEARANCE — bulletproof for all devices
+     iPhone 16 Pro: safe-area ≈ 59px → total ≈ 200px
+     Vivo V60 Android: env = 0 → max() gives 180px
+     Old iPhones / no notch: 180px
+  ══════════════════════════════════════════ */
   .container {
-    padding: 12px 12px;
-    /* max() ensures at least 150px regardless of safe-area support */
-    padding-bottom: max(150px, calc(60px + env(safe-area-inset-bottom, 0px) + 70px));
+    padding: 12px 12px 0;
   }
-
-  /* ── PANEL BOTTOM SPACE ── */
-  .panel { padding-bottom: 24px; }
-  .panel > *:last-child { margin-bottom: 8px; }
+  /* Spacer div injected by JS sits at bottom of every panel */
+  .bottom-spacer {
+    display:block;
+    height: max(180px, calc(56px + env(safe-area-inset-bottom,0px) + 110px));
+    pointer-events:none;
+  }
 
   /* ── HIDE DESKTOP TABS, SHOW BOTTOM NAV ── */
   .tabs { display:none !important; }
@@ -849,10 +1023,9 @@ header::before {
   .modal-actions { flex-direction:row; }
   .modal-actions .btn { flex:1; justify-content:center; }
   .form-row input,.form-row select,.form-row textarea {
-    font-size:16px !important; /* prevents iOS zoom on focus */
+    font-size:16px !important;
     padding:11px 14px;
   }
-  /* Modal drag handle */
   .modal::before {
     content:'';display:block;
     width:36px;height:4px;
@@ -878,7 +1051,7 @@ header::before {
   .login-field input { font-size:16px !important; }
 
   /* ── BUTTONS TOUCH ── */
-  .btn, .btn-add-pet, .btn-del-pet, .cbtn, .login-btn {
+  .btn,.btn-add-pet,.btn-del-pet,.cbtn,.login-btn {
     touch-action:manipulation;
     -webkit-tap-highlight-color:transparent;
     min-height:44px;
@@ -895,13 +1068,13 @@ header::before {
     scroll-snap-type:x mandatory;
     -webkit-overflow-scrolling:touch;
   }
-  .pet-card, .add-pet-card { scroll-snap-align:start; }
+  .pet-card,.add-pet-card { scroll-snap-align:start; }
 
   /* ── USER MGMT ── */
   #modal-userMgmt .modal { max-height:88vh; }
 }
 
-/* Tablet adjustments */
+/* Tablet */
 @media(min-width:641px) and (max-width:900px){
   .container { padding:18px 16px; }
   .grid-3 { grid-template-columns:repeat(3,1fr); }
@@ -973,20 +1146,18 @@ header::before {
     <button class="bnav-item active" onclick="switchTab('overview')" id="bnav-overview">
       <span class="bnav-icon">🏠</span><span>Home</span>
     </button>
-    <button class="bnav-item" onclick="switchTab('vaccines')" id="bnav-vaccines">
-      <span class="bnav-icon">💉</span><span>Vaccines</span>
-    </button>
-    <button class="bnav-item" onclick="switchTab('gallery')" id="bnav-gallery">
-      <span class="bnav-icon">📸</span><span>Gallery</span>
-    </button>
-    <button class="bnav-item" onclick="switchTab('food')" id="bnav-food">
-      <span class="bnav-icon">🍽️</span><span>Food</span>
-    </button>
-    <button class="bnav-item" onclick="switchTab('routine')" id="bnav-routine">
-      <span class="bnav-icon">📅</span><span>Routine</span>
-    </button>
     <button class="bnav-item" onclick="switchTab('health')" id="bnav-health">
       <span class="bnav-icon">❤️</span><span>Health</span>
+    </button>
+    <!-- ROUTINE — hero centre button -->
+    <button class="bnav-routine-hero" onclick="switchTab('routine')" id="bnav-routine">
+      <div class="bnav-routine-pill">
+        <span style="font-size:22px;line-height:1;">📅</span>
+        <span class="bnav-routine-label">Routine</span>
+      </div>
+    </button>
+    <button class="bnav-item" onclick="switchTab('deworming')" id="bnav-deworming">
+      <span class="bnav-icon">🪱</span><span>Deworm</span>
     </button>
     <button class="bnav-item" onclick="switchTab('family')" id="bnav-family">
       <span class="bnav-icon">💑</span><span>Family</span>
@@ -1006,14 +1177,12 @@ header::before {
     </div>
   </div>
 
-  <!-- PET SECTION -->
-  <div class="pet-section">
+  <!-- PET SECTION — premium pill design -->
+  <div class="pet-section" id="petSectionWrap">
     <div class="pet-section-header">
-      <div>
-        <div class="pet-section-title">🐾 My Fur Babies</div>
-      </div>
+      <div class="pet-section-title">🐾 My Fur Babies</div>
       <div class="pet-section-actions">
-        <button class="btn-del-pet" onclick="promptDeletePet()">🗑️ Remove Pet</button>
+        <button class="btn-del-pet" onclick="promptDeletePet()">🗑️</button>
         <button class="btn-add-pet" onclick="openModal('addPet')">➕ Add Pet</button>
       </div>
     </div>
@@ -1022,13 +1191,10 @@ header::before {
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('overview')" id="tab-overview">🏠 Overview</button>
-    <button class="tab" onclick="switchTab('vaccines')" id="tab-vaccines">💉 Vaccines</button>
-    <button class="tab" onclick="switchTab('deworming')" id="tab-deworming">🪱 Deworming</button>
-    <button class="tab" onclick="switchTab('gallery')" id="tab-gallery">📸 Gallery</button>
-    <button class="tab" onclick="switchTab('food')" id="tab-food">🍽️ Food</button>
-    <button class="tab" onclick="switchTab('health')" id="tab-health">❤️ Health</button>
+    <button class="tab active" onclick="switchTab('overview')" id="tab-overview">🏠 Home</button>
     <button class="tab" onclick="switchTab('routine')" id="tab-routine">📅 Routine</button>
+    <button class="tab" onclick="switchTab('health')" id="tab-health">❤️ Health</button>
+    <button class="tab" onclick="switchTab('deworming')" id="tab-deworming">🪱 Deworm</button>
     <button class="tab" onclick="switchTab('family')" id="tab-family">💑 Family</button>
   </div>
 
@@ -1041,105 +1207,98 @@ header::before {
       </div>
       <div class="emojis"><span class="spin">✨</span><span class="pulse">🐾</span><span class="spin" style="animation-direction:reverse;">🌸</span></div>
     </div>
-    <div class="grid-3" style="margin-bottom:22px;">
-      <div class="overview-stat"><div class="emoji">💉</div><div class="num" id="vaxCount" style="color:var(--pink)">0</div><div class="label">Vaccines Done</div></div>
+
+    <!-- TODAY'S ROUTINE DASHBOARD — primary card -->
+    <div class="routine-dashboard-card" onclick="switchTab('routine')">
+      <div class="rdc-header">
+        <div>
+          <div class="rdc-title">📅 Today's Routine</div>
+          <div class="rdc-sub" id="rdcSub">Loading...</div>
+        </div>
+        <div class="rdc-ring-wrap">
+          <svg class="rdc-ring" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="4"/>
+            <circle cx="22" cy="22" r="18" fill="none" stroke="white" stroke-width="4"
+              stroke-linecap="round"
+              stroke-dasharray="113"
+              stroke-dashoffset="113"
+              id="rdcRingFill"
+              transform="rotate(-90 22 22)"/>
+          </svg>
+          <div class="rdc-pct" id="rdcPct">0%</div>
+        </div>
+      </div>
+      <div class="rdc-tasks-preview" id="rdcTasksPreview"></div>
+      <div class="rdc-tap-hint">Tap to open full routine →</div>
+    </div>
+
+    <!-- Quick stats row -->
+    <div class="grid-3" style="margin-bottom:18px;">
+      <div class="overview-stat"><div class="emoji">💉</div><div class="num" id="vaxCount" style="color:var(--pink)">0</div><div class="label">Vaccines</div></div>
       <div class="overview-stat"><div class="emoji">🪱</div><div class="num" id="dewormCount" style="color:var(--lavender)">0</div><div class="label">Dewormings</div></div>
-      <div class="overview-stat"><div class="emoji">📸</div><div class="num" id="galleryCount" style="color:var(--sky)">0</div><div class="label">Photos</div></div>
-      <div class="overview-stat"><div class="emoji">⚖️</div><div class="num" id="petWeight" style="color:var(--coral)">—</div><div class="label">Weight (kg)</div></div>
+      <div class="overview-stat"><div class="emoji">⚖️</div><div class="num" id="petWeight" style="color:var(--coral)">—</div><div class="label">Weight kg</div></div>
       <div class="overview-stat"><div class="emoji">🎂</div><div class="num" id="petAge" style="color:var(--mint)">—</div><div class="label">Age</div></div>
-      <div class="overview-stat"><div class="emoji">🍽️</div><div class="num" id="foodCount" style="color:var(--yellow)">0</div><div class="label">Foods Rated</div></div>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title" style="color:var(--pink)">💉 Vaccine Coverage</div>
-        <div class="progress-wrap"><div class="progress-label"><span>Rabies</span><span>100%</span></div><div class="progress-bar"><div class="progress-fill fill-pink" style="width:100%"></div></div></div>
-        <div class="progress-wrap"><div class="progress-label"><span>Core Vaccines</span><span id="coreVaxPct">0%</span></div><div class="progress-bar"><div class="progress-fill fill-mint" id="coreVaxBar" style="width:0%"></div></div></div>
-        <div class="progress-wrap"><div class="progress-label"><span>Overall</span><span id="overallVaxPct">0%</span></div><div class="progress-bar"><div class="progress-fill fill-yellow" id="overallVaxBar" style="width:0%"></div></div></div>
-      </div>
-      <div class="card">
-        <div class="card-title" style="color:var(--lavender)">📅 Upcoming Reminders</div>
-        <div id="upcomingList"></div>
+      <div class="overview-stat"><div class="emoji">🚨</div><div class="num" id="overdueBadge" style="color:var(--coral)">0</div><div class="label">Overdue</div></div>
+      <div class="overview-stat" onclick="switchTab('routine')" style="cursor:pointer;">
+        <div class="emoji">✅</div>
+        <div class="num" id="routineStreakNum" style="color:var(--mint)">0</div>
+        <div class="label">Day Streak 🔥</div>
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--lavender)">📅 Upcoming Reminders</div>
+      <div id="upcomingList"></div>
+    </div>
+    <span class="bottom-spacer"></span>
   </div>
 
-  <!-- VACCINES -->
-  <div class="panel" id="panel-vaccines">
+  <!-- HEALTH — includes vaccines, deworming ref, weight, notes, vet -->
+  <div class="panel" id="panel-health">
+
+    <!-- Vaccines section inside health -->
     <div class="panel-header">
-      <div class="section-title">💉 Vaccine Records</div>
+      <div class="section-title">💉 Vaccines</div>
       <button class="btn btn-primary" id="addVaccineBtn" onclick="openModal('addVaccine')">➕ Add</button>
     </div>
-    <div class="card" style="margin-bottom:18px;">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
-        <span class="stat-chip chip-mint">✅ Done: <span id="vDone">0</span></span>
-        <span class="stat-chip chip-yellow">⏰ Upcoming: <span id="vUpcoming">0</span></span>
-        <span class="stat-chip chip-pink">🚨 Overdue: <span id="vOverdue">0</span></span>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <span class="stat-chip chip-mint">✅ <span id="vDone">0</span> Done</span>
+        <span class="stat-chip chip-yellow">⏰ <span id="vUpcoming">0</span> Soon</span>
+        <span class="stat-chip chip-pink">🚨 <span id="vOverdue">0</span> Overdue</span>
       </div>
       <div id="vaccineList"></div>
     </div>
-  </div>
 
-  <!-- DEWORMING -->
-  <div class="panel" id="panel-deworming">
-    <div class="panel-header">
-      <div class="section-title">🪱 Deworming</div>
-      <button class="btn btn-primary" id="addDewormBtn" onclick="openModal('addDeworm')">➕ Add</button>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title" style="color:var(--lavender)">📋 Deworming History</div>
-        <div class="deworm-timeline" id="dewormList"></div>
-      </div>
-      <div class="card">
-        <div class="card-title" style="color:var(--mint)">💊 Medications Used</div>
-        <div id="medicationList"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- GALLERY -->
-  <div class="panel" id="panel-gallery">
-    <div class="panel-header">
-      <div class="section-title">📸 Gallery</div>
-      <button class="btn btn-primary" id="addPhotoBtn" onclick="openModal('addPhoto')">📷 Add</button>
-    </div>
-    <div class="gallery-grid" id="galleryGrid"></div>
-  </div>
-
-  <!-- FOOD -->
-  <div class="panel" id="panel-food">
-    <div class="panel-header">
-      <div class="section-title">🍽️ Food Reviews</div>
-      <button class="btn btn-primary" id="addFoodBtn" onclick="openModal('addFood')">➕ Add</button>
-    </div>
-    <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;">
-      <button onclick="filterFood('all')" class="stat-chip chip-sky" style="cursor:pointer;border:none;" id="ff-all">All</button>
-      <button onclick="filterFood(5)" class="stat-chip chip-yellow" style="cursor:pointer;border:none;" id="ff-5">⭐⭐⭐⭐⭐</button>
-      <button onclick="filterFood(4)" class="stat-chip chip-mint" style="cursor:pointer;border:none;" id="ff-4">⭐⭐⭐⭐+</button>
-      <button onclick="filterFood(3)" class="stat-chip chip-lavender" style="cursor:pointer;border:none;" id="ff-3">⭐⭐⭐+</button>
-    </div>
-    <div class="food-grid" id="foodGrid"></div>
-  </div>
-
-  <!-- HEALTH -->
-  <div class="panel" id="panel-health">
-    <div class="section-title">❤️ Health Profile</div>
-    <div class="grid-2">
+    <!-- Weight + Notes -->
+    <div class="grid-2" style="margin-bottom:16px;">
       <div class="card">
         <div class="card-title" style="color:var(--coral)">⚖️ Weight Log</div>
         <div id="weightLog"></div>
-        <button class="btn btn-secondary" style="margin-top:10px;" onclick="openModal('addWeight')">+ Log Weight</button>
+        <button class="btn btn-secondary" style="margin-top:12px;width:100%;justify-content:center;" onclick="openModal('addWeight')">+ Log Weight</button>
       </div>
       <div class="card">
         <div class="card-title" style="color:var(--sky)">📝 Health Notes</div>
         <div id="healthNotes"></div>
-        <button class="btn btn-secondary" style="margin-top:10px;" onclick="openModal('addNote')">+ Add Note</button>
+        <button class="btn btn-secondary" style="margin-top:12px;width:100%;justify-content:center;" onclick="openModal('addNote')">+ Add Note</button>
       </div>
     </div>
-    <div class="card" style="margin-top:18px;">
-      <div class="card-title" style="color:var(--lavender)">🏥 Vet Information</div>
-      <div id="vetInfo"></div>
+
+    <!-- Vet card -->
+    <div class="vet-card">
+      <div class="vet-card-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--lavender),var(--sky));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏥</div>
+          <div>
+            <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:15px;color:var(--text-dark);">Vet Information</div>
+            <div style="font-size:11px;color:var(--text-medium);">Tap Edit to update details</div>
+          </div>
+        </div>
+        <button class="btn btn-edit" style="font-size:12px;padding:7px 14px;flex-shrink:0;" id="vetEditBtn">✏️ Edit</button>
+      </div>
+      <div id="vetInfo" style="margin-top:14px;"></div>
     </div>
+    <span class="bottom-spacer"></span>
   </div>
 
   <!-- ROUTINE -->
@@ -1193,7 +1352,26 @@ header::before {
       <div id="recurringTaskList"></div>
       <button class="btn btn-primary" style="margin-top:10px;font-size:12px;" onclick="openModal('addTask')">➕ Add Recurring Task</button>
     </div>
+    <span class="bottom-spacer"></span>
+  </div>
 
+  <!-- DEWORMING -->
+  <div class="panel" id="panel-deworming">
+    <div class="panel-header">
+      <div class="section-title">🪱 Deworming</div>
+      <button class="btn btn-primary" id="addDewormBtn" onclick="openModal('addDeworm')">➕ Add</button>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color:var(--lavender)">📋 History</div>
+        <div class="deworm-timeline" id="dewormList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--mint)">💊 Medications</div>
+        <div id="medicationList"></div>
+      </div>
+    </div>
+    <span class="bottom-spacer"></span>
   </div>
 
   <!-- FAMILY -->
@@ -2152,44 +2330,104 @@ function saveEditPet(){
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  document.getElementById('panel-'+tab).classList.add('active');
-  // sync bottom nav
+  const tabEl=document.getElementById('tab-'+tab);
+  if(tabEl) tabEl.classList.add('active');
+  const panelEl=document.getElementById('panel-'+tab);
+  if(panelEl) panelEl.classList.add('active');
+  // sync bottom nav — handles both regular items and hero button
   document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.bnav-routine-hero').forEach(b=>b.classList.remove('active'));
   const bn=document.getElementById('bnav-'+tab);
   if(bn) bn.classList.add('active');
-  // scroll to top of content on tab switch (mobile UX)
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 /* ═══════════════════════════════════════
    RENDER ALL
 ═══════════════════════════════════════ */
-function renderAll(){renderOverview();renderVaccines();renderDeworming();renderGallery();renderFood();renderHealth();renderFamily();}
+function renderAll(){renderOverview();renderVaccines();renderDeworming();renderHealth();renderFamily();renderRoutineDashboard();}
 
 function renderOverview(){
   const pet=getPet();
   document.getElementById('greetPet').textContent=`Hey ${pet.name}! ${SPECIES_EMOJI[pet.species]}`;
   const overdueVax=pet.vaccines.filter(v=>v.status==='overdue').length;
-  document.getElementById('greetSub').textContent=overdueVax>0?`⚠️ ${overdueVax} overdue vaccine(s) need attention!`:`All looking good today! Keep up the great care 🌟`;
+  document.getElementById('greetSub').textContent=overdueVax>0
+    ?`⚠️ ${overdueVax} overdue vaccine(s) need attention!`
+    :`All looking good today! Keep up the great care 🌟`;
   const doneVax=pet.vaccines.filter(v=>v.status==='done').length;
   document.getElementById('vaxCount').textContent=doneVax;
-  document.getElementById('dewormCount').textContent=pet.dewormings.filter(d=>d.status==='done').length;
-  document.getElementById('galleryCount').textContent=pet.gallery.length;
-  document.getElementById('petWeight').textContent=pet.weight;
+  document.getElementById('dewormCount').textContent=(pet.dewormings||[]).filter(d=>d.status==='done').length;
+  document.getElementById('petWeight').textContent=pet.weight||'—';
   document.getElementById('petAge').textContent=calcAge(pet.birthday);
-  document.getElementById('foodCount').textContent=pet.foods.length;
-  const total=pet.vaccines.length||1;
-  const pct=Math.round((doneVax/total)*100);
-  document.getElementById('overallVaxPct').textContent=pct+'%';
-  document.getElementById('overallVaxBar').style.width=pct+'%';
-  const corePct=Math.min(100,Math.round((doneVax/Math.max(3,total))*100));
-  document.getElementById('coreVaxPct').textContent=corePct+'%';
-  document.getElementById('coreVaxBar').style.width=corePct+'%';
-  const upcoming=[...pet.vaccines.filter(v=>v.status==='upcoming'||v.status==='overdue'),...pet.dewormings.filter(d=>d.status==='next')];
+  document.getElementById('overdueBadge').textContent=overdueVax;
+  // Streak: consecutive days with 100% routine done
+  const streak=calcStreak();
+  document.getElementById('routineStreakNum').textContent=streak;
+  const upcoming=[...pet.vaccines.filter(v=>v.status==='upcoming'||v.status==='overdue'),...(pet.dewormings||[]).filter(d=>d.status==='next')];
   const ul=document.getElementById('upcomingList');
   if(!upcoming.length){ul.innerHTML=`<div style="text-align:center;padding:18px;color:var(--text-medium);font-size:13px;">🎉 No upcoming items!</div>`;}
-  else{ul.innerHTML=upcoming.slice(0,4).map(item=>{const isV=item.hasOwnProperty('clinic');return`<div class="vax-row ${item.status==='overdue'?'overdue':'upcoming'}" style="cursor:default;"><span class="vax-icon">${isV?'💉':'🪱'}</span><div class="vax-name">${item.name||item.med}</div><div class="vax-date">Due: ${item.due||'—'}</div><span class="vax-status ${item.status==='overdue'?'status-overdue':'status-upcoming'}">${item.status==='overdue'?'🚨 Overdue':'⏰ Soon'}</span></div>`}).join('');}
+  else{ul.innerHTML=upcoming.slice(0,4).map(item=>{
+    const isV=item.hasOwnProperty('clinic');
+    return`<div class="vax-row ${item.status==='overdue'?'overdue':'upcoming'}" style="cursor:default;">
+      <span class="vax-icon">${isV?'💉':'🪱'}</span>
+      <div class="vax-name">${escHtml(item.name||item.med)}</div>
+      <div class="vax-date">Due: ${item.due||'—'}</div>
+      <span class="vax-status ${item.status==='overdue'?'status-overdue':'status-upcoming'}">${item.status==='overdue'?'🚨':'⏰'}</span>
+    </div>`;}).join('');}
+  renderRoutineDashboard();
+}
+
+function calcStreak(){
+  const r=getRoutine();
+  let streak=0;
+  const d=new Date();
+  for(let i=0;i<365;i++){
+    const ds=toDateStr(new Date(d.getFullYear(),d.getMonth(),d.getDate()-i));
+    const tasks=tasksForDate(ds);
+    if(!tasks.length){ if(i===0) continue; break; }
+    const done=tasks.filter(t=>isDone(ds,t.id)).length;
+    if(done===tasks.length) streak++;
+    else if(i>0) break;
+  }
+  return streak;
+}
+
+function renderRoutineDashboard(){
+  const today=todayStr();
+  const tasks=tasksForDate(today);
+  const done=tasks.filter(t=>isDone(today,t.id)).length;
+  const total=tasks.length;
+  const pct=total>0?Math.round((done/total)*100):0;
+  // Update ring
+  const ring=document.getElementById('rdcRingFill');
+  if(ring){
+    const circum=113;
+    ring.style.strokeDashoffset=String(circum-circum*(pct/100));
+  }
+  const pctEl=document.getElementById('rdcPct');
+  if(pctEl) pctEl.textContent=pct+'%';
+  const subEl=document.getElementById('rdcSub');
+  if(subEl){
+    if(!total) subEl.textContent='No tasks set for today';
+    else subEl.textContent=`${done} of ${total} tasks done`;
+  }
+  // Task preview chips
+  const prev=document.getElementById('rdcTasksPreview');
+  if(prev){
+    if(!tasks.length){
+      prev.innerHTML=`<span class="rdc-empty">Tap to add today's tasks ✨</span>`;
+    } else {
+      const sorted=[...tasks].sort((a,b)=>(isDone(today,a.id)?1:0)-(isDone(today,b.id)?1:0));
+      prev.innerHTML=sorted.slice(0,4).map(t=>{
+        const isDoneFlag=isDone(today,t.id);
+        return `<div class="rdc-task-chip ${isDoneFlag?'done':''}">
+          <span>${t.emoji||'🐾'}</span>
+          <span>${escHtml(t.name)}</span>
+          ${isDoneFlag?'<span class="rdc-check">✓</span>':''}
+        </div>`;
+      }).join('')+(tasks.length>4?`<div class="rdc-more">+${tasks.length-4} more</div>`:'');
+    }
+  }
 }
 
 function renderVaccines(){
@@ -2324,27 +2562,54 @@ function removeFood(idx){if(confirm('Remove this food?')){getPet().foods.splice(
 function renderHealth(){
   const pet=getPet();
   document.getElementById('weightLog').innerHTML=
-    pet.weights.slice(-5).reverse().map(w=>`
+    (pet.weights||[]).slice(-5).reverse().map(w=>`
       <div class="weight-item">
         <span style="font-size:18px;">⚖️</span>
-        <div style="flex:1;"><div style="font-family:'Baloo 2',cursive;font-weight:700;font-size:13px;">${w.val} kg</div>${w.note?`<div style="font-size:11px;color:var(--text-medium);">${w.note}</div>`:''}</div>
+        <div style="flex:1;"><div style="font-family:'Baloo 2',cursive;font-weight:700;font-size:13px;">${w.val} kg</div>${w.note?`<div style="font-size:11px;color:var(--text-medium);">${escHtml(w.note)}</div>`:''}</div>
         <div style="font-size:11px;color:var(--text-medium);">${w.date}</div>
-      </div>`).join('');
+      </div>`).join('')||
+    '<div style="color:var(--text-medium);font-size:13px;text-align:center;padding:14px;">No weight records yet!</div>';
   document.getElementById('healthNotes').innerHTML=
-    pet.notes.map(n=>`
+    (pet.notes||[]).map(n=>`
       <div class="note-item">
-        <div style="font-size:12px;color:var(--text-dark);">${n.text}</div>
+        <div style="font-size:12px;color:var(--text-dark);">${escHtml(n.text)}</div>
         <div style="font-size:11px;color:var(--text-medium);margin-top:3px;">📅 ${n.date}</div>
       </div>`).join('')||
     '<div style="color:var(--text-medium);font-size:13px;text-align:center;padding:14px;">No notes yet!</div>';
-  const v=pet.vet;
+  const v=pet.vet||{};
+  // Update the edit button in the vet card header
+  const editBtn=document.querySelector('.vet-card-header .btn-edit');
+  if(editBtn) editBtn.onclick=()=>openEditPet(state.activePet);
   document.getElementById('vetInfo').innerHTML=`
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
-      <button class="btn btn-edit" onclick="openEditPet(${state.activePet})" style="font-size:12px;padding:7px 14px;">✏️ Edit Vet Info</button>
+    <div class="vet-detail-row">
+      <span class="vet-detail-icon">👨‍⚕️</span>
+      <div style="flex:1;">
+        <div class="vet-detail-label">Veterinarian</div>
+        <div class="vet-detail-value">${escHtml(v.name||'—')}</div>
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-      <div class="vax-row done" style="cursor:default;flex-direction:column;align-items:flex-start;gap:3px;"><div style="font-size:11px;color:var(--text-medium);">👨‍⚕️ Veterinarian</div><div style="font-family:'Baloo 2',cursive;font-weight:700;font-size:13px;">${v.name||'—'}</div><div style="font-size:11px;color:var(--text-medium);">🏥 ${v.clinic||'—'}</div></div>
-      <div class="vax-row upcoming" style="cursor:default;flex-direction:column;align-items:flex-start;gap:3px;"><div style="font-size:11px;color:var(--text-medium);">📞 Contact</div><div style="font-family:'Baloo 2',cursive;font-weight:700;font-size:13px;">${v.phone||'—'}</div><div style="font-size:11px;color:var(--text-medium);">📧 ${v.email||'—'}</div></div>
+    <div class="vet-detail-row">
+      <span class="vet-detail-icon">🏥</span>
+      <div style="flex:1;">
+        <div class="vet-detail-label">Clinic</div>
+        <div class="vet-detail-value">${escHtml(v.clinic||'—')}</div>
+      </div>
+    </div>
+    <div class="vet-detail-row">
+      <span class="vet-detail-icon">📞</span>
+      <div style="flex:1;">
+        <div class="vet-detail-label">Phone</div>
+        <div class="vet-detail-value">${escHtml(v.phone||'—')}</div>
+      </div>
+      ${v.phone?`<a href="tel:${escHtml(v.phone)}" style="background:var(--mint-light);color:#2A7A34;border:none;border-radius:50px;padding:6px 14px;font-family:'Baloo 2',cursive;font-weight:700;font-size:12px;text-decoration:none;flex-shrink:0;white-space:nowrap;">📲 Call</a>`:''}
+    </div>
+    <div class="vet-detail-row">
+      <span class="vet-detail-icon">📧</span>
+      <div style="flex:1;">
+        <div class="vet-detail-label">Email</div>
+        <div class="vet-detail-value" style="word-break:break-all;">${escHtml(v.email||'—')}</div>
+      </div>
+      ${v.email?`<a href="mailto:${escHtml(v.email)}" style="background:var(--sky-light);color:#0A6B9D;border:none;border-radius:50px;padding:6px 14px;font-family:'Baloo 2',cursive;font-weight:700;font-size:12px;text-decoration:none;flex-shrink:0;white-space:nowrap;">✉️ Mail</a>`:''}
     </div>`;
 }
 
@@ -2661,12 +2926,9 @@ function saveParentPic(){
    FAB + ADMIN BUTTON VISIBILITY
 ═══════════════════════════════════════ */
 const FAB_ACTIONS = {
-  vaccines:  () => openModal('addVaccine'),
+  health:    () => openModal('addVaccine'),
   deworming: () => openModal('addDeworm'),
-  gallery:   () => openModal('addPhoto'),
-  food:      () => openModal('addFood'),
   routine:   () => openModal('addTask'),
-  health:    () => openModal('addWeight'),
 };
 
 let currentTab = 'overview';
