@@ -662,6 +662,31 @@ header::before {
   padding:2px 8px;border-radius:50px;background:var(--lavender);color:white;
 }
 
+/* ── FLOATING ACTION BUTTON (mobile add) ── */
+#fab {
+  display:none; /* shown only on mobile via media query */
+  position:fixed;
+  right:18px;
+  /* sits above bottom nav + safe area */
+  bottom:calc(60px + env(safe-area-inset-bottom, 0px) + 12px);
+  z-index:49;
+  width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg,var(--pink),var(--lavender));
+  color:white;border:none;font-size:26px;
+  box-shadow:0 6px 24px rgba(199,125,255,0.5);
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform 0.2s,opacity 0.2s;
+  align-items:center;justify-content:center;
+}
+#fab:active { transform:scale(0.92); }
+#fab.hidden { opacity:0;pointer-events:none; }
+
+@media(max-width:640px){
+  #fab { display:flex; }
+}
+
 /* ── BOTTOM NAV (mobile tabs) ── */
 .bottom-nav {
   display:none;
@@ -729,21 +754,27 @@ header::before {
   .logout-btn { padding:5px 10px; font-size:11px; }
   #userMgmtBtn { padding:5px 10px; font-size:11px; }
 
-  /* ── CONTAINER ── */
+  /* ── PANEL HEADERS ── */
+  .panel-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+    gap:10px;
+    flex-wrap:nowrap; /* never wrap — FAB handles mobile add action */
+  }
+  .panel-header .section-title { margin-bottom:0; font-size:17px; flex-shrink:1; min-width:0; }
+  .panel-header .btn { flex-shrink:0; font-size:12px; padding:8px 12px; white-space:nowrap; }
+
+  /* ── CONTAINER — guaranteed safe padding on ANY device ── */
   .container {
     padding: 12px 12px;
-    /* 56px nav + safe area + 24px breathing room */
-    padding-bottom: calc(56px + env(safe-area-inset-bottom, 20px) + 24px);
+    /* max() ensures at least 150px regardless of safe-area support */
+    padding-bottom: max(150px, calc(60px + env(safe-area-inset-bottom, 0px) + 70px));
   }
 
   /* ── PANEL BOTTOM SPACE ── */
-  /* Every panel gets extra clearance so the last card/button clears the nav */
   .panel { padding-bottom: 24px; }
-  .panel > .card:last-child,
-  .panel > .grid-2:last-child,
-  .panel > .grid-3:last-child { margin-bottom: 0; }
-
-  /* Explicit extra space on the last item in every panel */
   .panel > *:last-child { margin-bottom: 8px; }
 
   /* ── HIDE DESKTOP TABS, SHOW BOTTOM NAV ── */
@@ -797,11 +828,6 @@ header::before {
 
   /* ── GALLERY ── */
   .gallery-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
-
-  /* ── SECTION HEADERS ── */
-  [style*="display:flex;justify-content:space-between"] {
-    flex-wrap:wrap;gap:8px;
-  }
 
   /* ── CONFIRM BAR ── */
   .confirm-bar { flex-direction:column; gap:10px; padding:14px; border-radius:18px; }
@@ -968,6 +994,9 @@ header::before {
   </div>
 </nav>
 
+<!-- FLOATING ACTION BUTTON (mobile only) -->
+<button id="fab" onclick="fabAction()" title="Add">➕</button>
+
   <!-- Confirm bar -->
   <div class="confirm-bar" id="confirmBar">
     <span id="confirmMsg">Delete this pet?</span>
@@ -1036,9 +1065,9 @@ header::before {
 
   <!-- VACCINES -->
   <div class="panel" id="panel-vaccines">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+    <div class="panel-header">
       <div class="section-title">💉 Vaccine Records</div>
-      <button class="btn btn-primary" onclick="openModal('addVaccine')">➕ Add Vaccine</button>
+      <button class="btn btn-primary" id="addVaccineBtn" onclick="openModal('addVaccine')">➕ Add</button>
     </div>
     <div class="card" style="margin-bottom:18px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
@@ -1052,9 +1081,9 @@ header::before {
 
   <!-- DEWORMING -->
   <div class="panel" id="panel-deworming">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-      <div class="section-title">🪱 Deworming Schedule</div>
-      <button class="btn btn-primary" onclick="openModal('addDeworm')">➕ Add Record</button>
+    <div class="panel-header">
+      <div class="section-title">🪱 Deworming</div>
+      <button class="btn btn-primary" id="addDewormBtn" onclick="openModal('addDeworm')">➕ Add</button>
     </div>
     <div class="grid-2">
       <div class="card">
@@ -1070,18 +1099,18 @@ header::before {
 
   <!-- GALLERY -->
   <div class="panel" id="panel-gallery">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-      <div class="section-title">📸 Photo Gallery</div>
-      <button class="btn btn-primary" onclick="openModal('addPhoto')">📷 Add Photo</button>
+    <div class="panel-header">
+      <div class="section-title">📸 Gallery</div>
+      <button class="btn btn-primary" id="addPhotoBtn" onclick="openModal('addPhoto')">📷 Add</button>
     </div>
     <div class="gallery-grid" id="galleryGrid"></div>
   </div>
 
   <!-- FOOD -->
   <div class="panel" id="panel-food">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+    <div class="panel-header">
       <div class="section-title">🍽️ Food Reviews</div>
-      <button class="btn btn-primary" id="addFoodBtn" onclick="openModal('addFood')">➕ Add Food</button>
+      <button class="btn btn-primary" id="addFoodBtn" onclick="openModal('addFood')">➕ Add</button>
     </div>
     <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;">
       <button onclick="filterFood('all')" class="stat-chip chip-sky" style="cursor:pointer;border:none;" id="ff-all">All</button>
@@ -1714,6 +1743,7 @@ async function doLogin() {
   // Show Users button only for admin
   document.getElementById('userMgmtBtn').style.display = currentUser.role==='admin' ? 'flex' : 'none';
   await init();
+  updateAdminButtons();
 }
 
 function doLogout() {
@@ -1738,6 +1768,8 @@ async function checkSession() {
         document.getElementById('loginScreen').style.display='none';
         document.getElementById('headerUserChip').textContent = `👋 ${currentUser.username}`;
         document.getElementById('userMgmtBtn').style.display = currentUser.role==='admin' ? 'flex' : 'none';
+        // Will be called again after init(), but set early for UI consistency
+        setTimeout(updateAdminButtons, 100);
         return true;
       }
     }
@@ -2624,6 +2656,55 @@ function saveParentPic(){
   renderFamily();
   saveState();
 }
+
+/* ═══════════════════════════════════════
+   FAB + ADMIN BUTTON VISIBILITY
+═══════════════════════════════════════ */
+const FAB_ACTIONS = {
+  vaccines:  () => openModal('addVaccine'),
+  deworming: () => openModal('addDeworm'),
+  gallery:   () => openModal('addPhoto'),
+  food:      () => openModal('addFood'),
+  routine:   () => openModal('addTask'),
+  health:    () => openModal('addWeight'),
+};
+
+let currentTab = 'overview';
+
+function updateFab(tab){
+  currentTab = tab;
+  const fab = document.getElementById('fab');
+  if(!fab) return;
+  const isAdmin = currentUser?.role === 'admin';
+  if(FAB_ACTIONS[tab] && isAdmin){
+    fab.classList.remove('hidden');
+  } else {
+    fab.classList.add('hidden');
+  }
+}
+
+function fabAction(){
+  if(FAB_ACTIONS[currentTab]) FAB_ACTIONS[currentTab]();
+}
+
+function updateAdminButtons(){
+  const isAdmin = currentUser?.role === 'admin';
+  // Show/hide all panel add buttons based on role
+  ['addVaccineBtn','addDewormBtn','addPhotoBtn','addFoodBtn'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display = isAdmin ? 'inline-flex' : 'none';
+  });
+  updateFab(currentTab);
+}
+
+// Hook switchTab to update FAB and button visibility
+const _origSwitchTabFab = window.switchTab || switchTab;
+window.switchTab = function(tab){
+  _origSwitchTabFab(tab);
+  updateAdminButtons();
+  updateFab(tab);
+  if(tab==='routine') renderRoutine();
+};
 
 /* ═══════════════════════════════════════
    ROUTINE — CALENDAR + DAILY CHECKLIST
