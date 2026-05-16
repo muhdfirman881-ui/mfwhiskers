@@ -689,19 +689,39 @@ header::before {
 .vet-detail-label { font-size:10px;color:var(--text-medium);font-family:'Baloo 2',cursive;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
 .vet-detail-value { font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:var(--text-dark); }
 
-/* ── PET SECTION → CONTENT gap ── */
+/* ── STICKY PET+TABS STRIP — no gap, solid background ── */
+.pet-tabs-strip {
+  position:sticky;
+  top:0;
+  z-index:9;
+  background:rgba(255,255,255,0.97);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  border-bottom:1.5px solid rgba(199,125,255,0.12);
+  box-shadow:0 4px 20px rgba(100,60,180,0.1);
+}
+/* override old gap-causing rules now that strip handles layout */
 .pet-section {
   margin-bottom:0 !important;
-  border-bottom-left-radius:0 !important;
-  border-bottom-right-radius:0 !important;
-  border-bottom:none !important;
-  box-shadow:0 2px 0 rgba(199,125,255,0.08),var(--shadow) !important;
+  border-radius:0 !important;
+  border:none !important;
+  box-shadow:none !important;
+  background:transparent !important;
+  backdrop-filter:none !important;
+  padding:14px 16px 10px !important;
 }
 .tabs {
-  border-top-left-radius:0 !important;
-  border-top-right-radius:0 !important;
+  border-radius:0 !important;
   margin-top:0 !important;
-  border-top:1.5px solid rgba(199,125,255,0.1);
+  margin-bottom:0 !important;
+  border-top:1px solid rgba(199,125,255,0.1) !important;
+  box-shadow:none !important;
+  background:transparent !important;
+  backdrop-filter:none !important;
+  padding:6px 10px !important;
+}
+.container {
+  padding-top:8px;
 }
 
 /* ── PREMIUM ACTIVE TAB INDICATOR ── */
@@ -954,6 +974,11 @@ header::before {
   /* ── HIDE DESKTOP TABS, SHOW BOTTOM NAV ── */
   .tabs { display:none !important; }
   .bottom-nav { display:block; }
+  /* on mobile: pet strip has no tab row, lighter shadow */
+  .pet-tabs-strip {
+    box-shadow:0 2px 12px rgba(100,60,180,0.08);
+    border-bottom:1px solid rgba(199,125,255,0.1);
+  }
 
   /* ── PET SECTION ── */
   .pet-section { padding:12px 14px; border-radius:20px; }
@@ -1177,25 +1202,27 @@ header::before {
     </div>
   </div>
 
-  <!-- PET SECTION — premium pill design -->
-  <div class="pet-section" id="petSectionWrap">
-    <div class="pet-section-header">
-      <div class="pet-section-title">🐾 My Fur Babies</div>
-      <div class="pet-section-actions">
-        <button class="btn-del-pet" onclick="promptDeletePet()">🗑️</button>
-        <button class="btn-add-pet" onclick="openModal('addPet')">➕ Add Pet</button>
+  <div class="pet-tabs-strip">
+    <!-- PET SECTION -->
+    <div class="pet-section" id="petSectionWrap">
+      <div class="pet-section-header">
+        <div class="pet-section-title">🐾 My Fur Babies</div>
+        <div class="pet-section-actions">
+          <button class="btn-del-pet" onclick="promptDeletePet()">🗑️</button>
+          <button class="btn-add-pet" onclick="openModal('addPet')">➕ Add Pet</button>
+        </div>
       </div>
+      <div class="pet-scroll" id="petSelector"></div>
     </div>
-    <div class="pet-scroll" id="petSelector"></div>
-  </div>
 
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('overview')" id="tab-overview">🏠 Home</button>
-    <button class="tab" onclick="switchTab('routine')" id="tab-routine">📅 Routine</button>
-    <button class="tab" onclick="switchTab('health')" id="tab-health">❤️ Health</button>
-    <button class="tab" onclick="switchTab('deworming')" id="tab-deworming">🪱 Deworm</button>
-    <button class="tab" onclick="switchTab('family')" id="tab-family">💑 Family</button>
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview')" id="tab-overview">🏠 Home</button>
+      <button class="tab" onclick="switchTab('routine')" id="tab-routine">📅 Routine</button>
+      <button class="tab" onclick="switchTab('health')" id="tab-health">❤️ Health</button>
+      <button class="tab" onclick="switchTab('deworming')" id="tab-deworming">🪱 Deworm</button>
+      <button class="tab" onclick="switchTab('family')" id="tab-family">💑 Family</button>
+    </div>
   </div>
 
   <!-- OVERVIEW -->
@@ -2973,7 +3000,8 @@ window.switchTab = function(tab){
 ═══════════════════════════════════════ */
 let calYear  = new Date().getFullYear();
 let calMonth = new Date().getMonth();
-let selectedDate = new Date().toISOString().split('T')[0];
+// Always a live reference — use a getter pattern so it's always today on first open
+let selectedDate = (()=>{ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
 
 function toDateStr(d){ return d.toISOString().split('T')[0]; }
 function todayStr(){ return new Date().toISOString().split('T')[0]; }
@@ -3217,11 +3245,40 @@ function deleteTask(taskId,isOnce){
 }
 
 // Hook switchTab to render routine when navigating to it
+// Always sync calendar to real current date on open
 const _origSwitchTab=switchTab;
 window.switchTab=function(tab){
   _origSwitchTab(tab);
-  if(tab==='routine') renderRoutine();
+  if(tab==='routine'){
+    // Always reset to real today — handles crossing midnight or revisiting next day
+    const now=new Date();
+    calYear=now.getFullYear();
+    calMonth=now.getMonth();
+    selectedDate=toDateStr(now);
+    renderRoutine();
+  }
+  if(tab==='overview') renderRoutineDashboard();
 };
+
+// Live clock: re-render routine dashboard every minute so streak/progress stays fresh
+setInterval(()=>{
+  // Silently update routine dashboard on home if active
+  const homeActive=document.getElementById('panel-overview')?.classList.contains('active');
+  if(homeActive) renderRoutineDashboard();
+  // If routine panel is open, keep checklist fresh (e.g. date crossover at midnight)
+  const routineActive=document.getElementById('panel-routine')?.classList.contains('active');
+  if(routineActive){
+    const now=new Date();
+    const newDate=toDateStr(now);
+    // If day changed (midnight crossover), reset calendar to new day
+    if(newDate!==selectedDate && selectedDate===toDateStr(new Date(now.getTime()-60000))){
+      calYear=now.getFullYear();
+      calMonth=now.getMonth();
+      selectedDate=newDate;
+    }
+    renderRoutine();
+  }
+},60000); // every 60 seconds
 </script>
 </body>
 </html>
