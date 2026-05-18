@@ -546,6 +546,47 @@ header::before {
 }
 .food-edit:hover{background:var(--yellow-light);color:#9A7000;}
 
+/* ── DAILY CAT FACT BANNER ── */
+.cat-fact-banner {
+  display:flex;align-items:flex-start;gap:14px;
+  background:linear-gradient(135deg,rgba(237,217,255,0.75),rgba(255,214,231,0.65));
+  backdrop-filter:blur(12px);
+  border:1.5px solid rgba(255,255,255,0.9);
+  border-radius:22px;
+  padding:16px 18px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+}
+.cat-fact-banner::before {
+  content:'';position:absolute;
+  top:-24px;right:-24px;width:90px;height:90px;
+  border-radius:50%;
+  background:rgba(199,125,255,0.08);
+}
+.cat-fact-emoji {
+  font-size:36px;flex-shrink:0;
+  animation:pawWiggle 3s ease-in-out infinite;
+  filter:drop-shadow(0 2px 8px rgba(199,125,255,0.3));
+}
+.cat-fact-body { flex:1;min-width:0; }
+.cat-fact-label {
+  font-family:'Baloo 2',cursive;font-size:10px;font-weight:800;
+  color:var(--lavender-deep);letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:5px;
+}
+.cat-fact-text {
+  font-family:'Quicksand',sans-serif;font-size:13px;font-weight:600;
+  color:var(--text-dark);line-height:1.55;
+}
+
+/* ── ROUTINE NAV DATE ── */
+.bnav-routine-date {
+  font-family:'Baloo 2',cursive;font-size:9px;font-weight:800;
+  color:rgba(255,255,255,0.9);letter-spacing:0.5px;
+  line-height:1;margin-bottom:1px;
+}
+
 /* ── ROUTINE DASHBOARD CARD (on home screen) ── */
 .routine-dashboard-card {
   background:linear-gradient(135deg,#C77DFF 0%,#FF6B9D 55%,#FF9A5C 100%);
@@ -1177,7 +1218,8 @@ header::before {
     <!-- ROUTINE — hero centre button -->
     <button class="bnav-routine-hero" onclick="switchTab('routine')" id="bnav-routine">
       <div class="bnav-routine-pill">
-        <span style="font-size:22px;line-height:1;">📅</span>
+        <span class="bnav-routine-date" id="bnavRoutineDate">—</span>
+        <span style="font-size:18px;line-height:1;">📅</span>
         <span class="bnav-routine-label">Routine</span>
       </div>
     </button>
@@ -1227,12 +1269,14 @@ header::before {
 
   <!-- OVERVIEW -->
   <div class="panel active" id="panel-overview">
-    <div class="deco-banner">
-      <div class="text">
-        <h2 id="greetPet">Hey there! 🐾</h2>
-        <p id="greetSub">All looking good today! 🌟</p>
+
+    <!-- Daily Cat Fact Banner -->
+    <div class="cat-fact-banner">
+      <div class="cat-fact-emoji" id="catFactEmoji">🐱</div>
+      <div class="cat-fact-body">
+        <div class="cat-fact-label">✦ Daily Cat Fact</div>
+        <div class="cat-fact-text" id="catFactText">Loading today's fact...</div>
       </div>
-      <div class="emojis"><span class="spin">✨</span><span class="pulse">🐾</span><span class="spin" style="animation-direction:reverse;">🌸</span></div>
     </div>
 
     <!-- TODAY'S ROUTINE DASHBOARD — primary card -->
@@ -2191,6 +2235,7 @@ async function init(){
   updateBreedOptions();
   renderPetSelector();
   renderAll();
+  updateRoutineNavDate();
   document.getElementById('loadingOverlay').style.display='none';
 }
 
@@ -2374,23 +2419,104 @@ function switchTab(tab){
 ═══════════════════════════════════════ */
 function renderAll(){renderOverview();renderVaccines();renderDeworming();renderHealth();renderFamily();renderRoutineDashboard();}
 
+/* ═══════════════════════════════════════
+   GMT+8 TIME HELPERS
+═══════════════════════════════════════ */
+function nowGMT8(){
+  // Returns a Date object adjusted to GMT+8
+  const utc = Date.now() + (new Date().getTimezoneOffset()*60000);
+  return new Date(utc + 8*3600000);
+}
+function toDateStrGMT8(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function todayStr(){ return toDateStrGMT8(nowGMT8()); }
+function toDateStr(d){ return toDateStrGMT8(d); }
+
+// Live date string for the routine button: "18 May"
+function liveRoutineDate(){
+  const d=nowGMT8();
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+function updateRoutineNavDate(){
+  const el=document.getElementById('bnavRoutineDate');
+  if(el) el.textContent=liveRoutineDate();
+}
+
+/* ═══════════════════════════════════════
+   DAILY CAT FACTS
+═══════════════════════════════════════ */
+const CAT_FACTS = [
+  {emoji:'😺',fact:"Cats spend 70% of their lives sleeping — that's up to 16 hours a day!"},
+  {emoji:'👃',fact:"A cat's nose print is unique, just like a human fingerprint."},
+  {emoji:'🐾',fact:"Cats walk like camels and giraffes — both right feet first, then both left feet."},
+  {emoji:'💬',fact:"Cats developed meowing specifically to communicate with humans, not with other cats."},
+  {emoji:'🌡️',fact:"A cat's normal body temperature is between 38–39°C (100.4–102.2°F)."},
+  {emoji:'🏃',fact:"Domestic cats can reach speeds of up to 48 km/h (30 mph) in short bursts."},
+  {emoji:'🦷',fact:"Cats have 30 adult teeth — compared to 32 in adult humans."},
+  {emoji:'👁️',fact:"Cats can see in near-total darkness and have a 200° field of view."},
+  {emoji:'🧠',fact:"A cat's brain is 90% similar to a human's brain in terms of structure."},
+  {emoji:'💤',fact:"Cats can dream during REM sleep — their whiskers and paws often twitch!"},
+  {emoji:'🫀',fact:"A cat's heart beats nearly twice as fast as a human's — 140–220 bpm."},
+  {emoji:'🎵',fact:"Cats can hear ultrasonic sounds that even dogs can't — up to 65 kHz."},
+  {emoji:'🌍',fact:"There are approximately 600 million domestic cats in the world."},
+  {emoji:'🤸',fact:"Cats have a 'righting reflex' — they can rotate their spine mid-air to always land on their feet."},
+  {emoji:'🐱',fact:"A group of cats is called a clowder. A group of kittens is called a kindle."},
+  {emoji:'😴',fact:"Cats conserve energy with short, deep sleep — but stay alert to sounds even while asleep."},
+  {emoji:'🦾',fact:"Cats have powerful hind legs that let them jump up to 6 times their body length."},
+  {emoji:'🫁',fact:"Cats purr at a frequency of 25–50 Hz, which can promote bone healing and reduce stress."},
+  {emoji:'🍽️',fact:"Cats are obligate carnivores — they must eat meat to survive and cannot thrive on a plant-based diet."},
+  {emoji:'💧',fact:"Cats have a low thirst drive because their wild ancestors got most of their moisture from prey."},
+  {emoji:'🧶',fact:"Cats 'make biscuits' (knead) as a comforting behaviour left over from kittenhood nursing."},
+  {emoji:'🌙',fact:"Cats are crepuscular — most active at dawn and dusk, not fully nocturnal."},
+  {emoji:'🩺',fact:"Cats hide illness instinctively — regular vet checks are crucial even when they seem fine."},
+  {emoji:'🤝',fact:"Slow-blinking at a cat is the feline equivalent of a smile — they often blink back!"},
+  {emoji:'🎭',fact:"Cats have a third eyelid called the nictitating membrane that helps protect and moisten the eye."},
+  {emoji:'📐',fact:"A cat's whiskers are roughly as wide as its body — they use them to gauge whether they can fit through a gap."},
+  {emoji:'🎯',fact:"Cats have a specialized collarbone that lets them always land feet-first from great heights."},
+  {emoji:'🧬',fact:"Orange cats are mostly male — the gene for orange colour is linked to the X chromosome."},
+  {emoji:'🏠',fact:"Cats mark their territory by rubbing their face on objects — spreading scent from facial glands."},
+  {emoji:'🐟',fact:"Despite the stereotype, most cats are actually lactose intolerant after kittenhood."},
+  {emoji:'🌈',fact:"Cats can't taste sweetness — they lack the taste receptor gene for detecting sugar."},
+];
+
+function getDailyFact(){
+  // Use day-of-year in GMT+8 as a stable seed so same fact shows all day
+  const d=nowGMT8();
+  const start=new Date(d.getFullYear(),0,0);
+  const diff=d-start;
+  const oneDay=1000*60*60*24;
+  const dayOfYear=Math.floor(diff/oneDay);
+  return CAT_FACTS[dayOfYear % CAT_FACTS.length];
+}
+
+function renderCatFact(){
+  const f=getDailyFact();
+  const el=document.getElementById('catFactText');
+  const em=document.getElementById('catFactEmoji');
+  if(el) el.textContent=f.fact;
+  if(em) em.textContent=f.emoji;
+}
+
+/* ═══════════════════════════════════════
+   OVERVIEW + ROUTINE DASHBOARD
+═══════════════════════════════════════ */
 function renderOverview(){
   const pet=getPet();
-  document.getElementById('greetPet').textContent=`Hey ${pet.name}! ${SPECIES_EMOJI[pet.species]}`;
-  const overdueVax=pet.vaccines.filter(v=>v.status==='overdue').length;
-  document.getElementById('greetSub').textContent=overdueVax>0
-    ?`⚠️ ${overdueVax} overdue vaccine(s) need attention!`
-    :`All looking good today! Keep up the great care 🌟`;
-  const doneVax=pet.vaccines.filter(v=>v.status==='done').length;
+  const overdueVax=(pet.vaccines||[]).filter(v=>v.status==='overdue').length;
+  const doneVax=(pet.vaccines||[]).filter(v=>v.status==='done').length;
   document.getElementById('vaxCount').textContent=doneVax;
   document.getElementById('dewormCount').textContent=(pet.dewormings||[]).filter(d=>d.status==='done').length;
   document.getElementById('petWeight').textContent=pet.weight||'—';
   document.getElementById('petAge').textContent=calcAge(pet.birthday);
   document.getElementById('overdueBadge').textContent=overdueVax;
-  // Streak: consecutive days with 100% routine done
   const streak=calcStreak();
   document.getElementById('routineStreakNum').textContent=streak;
-  const upcoming=[...pet.vaccines.filter(v=>v.status==='upcoming'||v.status==='overdue'),...(pet.dewormings||[]).filter(d=>d.status==='next')];
+  const upcoming=[...(pet.vaccines||[]).filter(v=>v.status==='upcoming'||v.status==='overdue'),...(pet.dewormings||[]).filter(d=>d.status==='next')];
   const ul=document.getElementById('upcomingList');
   if(!upcoming.length){ul.innerHTML=`<div style="text-align:center;padding:18px;color:var(--text-medium);font-size:13px;">🎉 No upcoming items!</div>`;}
   else{ul.innerHTML=upcoming.slice(0,4).map(item=>{
@@ -2401,15 +2527,17 @@ function renderOverview(){
       <div class="vax-date">Due: ${item.due||'—'}</div>
       <span class="vax-status ${item.status==='overdue'?'status-overdue':'status-upcoming'}">${item.status==='overdue'?'🚨':'⏰'}</span>
     </div>`;}).join('');}
+  renderCatFact();
   renderRoutineDashboard();
 }
 
 function calcStreak(){
   const r=getRoutine();
   let streak=0;
-  const d=new Date();
+  const now=nowGMT8();
   for(let i=0;i<365;i++){
-    const ds=toDateStr(new Date(d.getFullYear(),d.getMonth(),d.getDate()-i));
+    const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);
+    const ds=toDateStrGMT8(d);
     const tasks=tasksForDate(ds);
     if(!tasks.length){ if(i===0) continue; break; }
     const done=tasks.filter(t=>isDone(ds,t.id)).length;
@@ -3260,25 +3388,23 @@ window.switchTab=function(tab){
   if(tab==='overview') renderRoutineDashboard();
 };
 
-// Live clock: re-render routine dashboard every minute so streak/progress stays fresh
+// Live clock: refresh every 60s — keeps nav date, routine, cat fact fresh
 setInterval(()=>{
-  // Silently update routine dashboard on home if active
+  updateRoutineNavDate();
   const homeActive=document.getElementById('panel-overview')?.classList.contains('active');
-  if(homeActive) renderRoutineDashboard();
-  // If routine panel is open, keep checklist fresh (e.g. date crossover at midnight)
+  if(homeActive){ renderCatFact(); renderRoutineDashboard(); }
   const routineActive=document.getElementById('panel-routine')?.classList.contains('active');
   if(routineActive){
-    const now=new Date();
-    const newDate=toDateStr(now);
-    // If day changed (midnight crossover), reset calendar to new day
-    if(newDate!==selectedDate && selectedDate===toDateStr(new Date(now.getTime()-60000))){
+    const now=nowGMT8();
+    const newDate=toDateStrGMT8(now);
+    if(newDate!==selectedDate){
       calYear=now.getFullYear();
       calMonth=now.getMonth();
       selectedDate=newDate;
     }
     renderRoutine();
   }
-},60000); // every 60 seconds
+},60000);
 </script>
 </body>
 </html>
