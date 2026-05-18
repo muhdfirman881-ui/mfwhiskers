@@ -580,11 +580,33 @@ header::before {
   color:var(--text-dark);line-height:1.55;
 }
 
-/* ── ROUTINE NAV DATE ── */
-.bnav-routine-date {
-  font-family:'Baloo 2',cursive;font-size:9px;font-weight:800;
-  color:rgba(255,255,255,0.9);letter-spacing:0.5px;
-  line-height:1;margin-bottom:1px;
+/* ── MINI CALENDAR (replaces 📅 emoji in nav) ── */
+.mini-cal {
+  width:34px;
+  background:white;
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,0.18);
+  flex-shrink:0;
+}
+.mini-cal-header {
+  background:linear-gradient(135deg,#FF6B9D,#C77DFF);
+  color:white;
+  font-family:'Baloo 2',cursive;
+  font-size:8px;
+  font-weight:800;
+  text-align:center;
+  padding:2px 0;
+  letter-spacing:0.5px;
+}
+.mini-cal-day {
+  color:#2D1B69;
+  font-family:'Baloo 2',cursive;
+  font-size:16px;
+  font-weight:800;
+  text-align:center;
+  line-height:1;
+  padding:3px 0 4px;
 }
 
 /* ── ROUTINE DASHBOARD CARD (on home screen) ── */
@@ -1218,8 +1240,10 @@ header::before {
     <!-- ROUTINE — hero centre button -->
     <button class="bnav-routine-hero" onclick="switchTab('routine')" id="bnav-routine">
       <div class="bnav-routine-pill">
-        <span class="bnav-routine-date" id="bnavRoutineDate">—</span>
-        <span style="font-size:18px;line-height:1;">📅</span>
+        <div class="mini-cal" id="miniCal">
+          <div class="mini-cal-header">MON</div>
+          <div class="mini-cal-day" id="miniCalDay">—</div>
+        </div>
         <span class="bnav-routine-label">Routine</span>
       </div>
     </button>
@@ -2436,15 +2460,14 @@ function toDateStrGMT8(d){
 function todayStr(){ return toDateStrGMT8(nowGMT8()); }
 function toDateStr(d){ return toDateStrGMT8(d); }
 
-// Live date string for the routine button: "18 May"
-function liveRoutineDate(){
-  const d=nowGMT8();
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${d.getDate()} ${months[d.getMonth()]}`;
-}
+// Live date string for the routine button nav mini calendar
+const DAY_SHORT=['SUN','MON','TUE','WED','THU','FRI','SAT'];
 function updateRoutineNavDate(){
-  const el=document.getElementById('bnavRoutineDate');
-  if(el) el.textContent=liveRoutineDate();
+  const d=nowGMT8();
+  const dayEl=document.getElementById('miniCalDay');
+  const hdrEl=document.querySelector('.mini-cal-header');
+  if(dayEl) dayEl.textContent=d.getDate();
+  if(hdrEl) hdrEl.textContent=DAY_SHORT[d.getDay()];
 }
 
 /* ═══════════════════════════════════════
