@@ -423,8 +423,60 @@ header::before {
 .bg-shape{position:absolute;border-radius:50%;opacity:0.04;background:var(--lavender);animation:bgFloat ease-in-out infinite alternate;}
 @keyframes bgFloat{0%{transform:translate(0,0) scale(1)}100%{transform:translate(20px,20px) scale(1.05)}}
 
-/* scroll */
-::-webkit-scrollbar{width:6px;height:6px;}
+/* ── BIOMETRIC / FINGERPRINT BUTTON ── */
+.biometric-btn {
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,rgba(79,195,247,0.12),rgba(199,125,255,0.18));
+  border:2px solid rgba(199,125,255,0.35);
+  border-radius:50px;
+  font-family:'Baloo 2',cursive;font-weight:800;font-size:15px;
+  color:var(--text-dark);
+  cursor:pointer;margin-top:12px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:all 0.2s;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  position:relative;overflow:hidden;
+  box-shadow:0 0 0 0 rgba(199,125,255,0);
+}
+.biometric-btn::after {
+  content:'';position:absolute;inset:0;border-radius:50px;
+  background:linear-gradient(135deg,rgba(79,195,247,0.3),rgba(199,125,255,0.3));
+  opacity:0;transition:opacity 0.3s;
+}
+.biometric-btn:active::after { opacity:1; }
+.biometric-btn:not(.hidden) {
+  animation:biometricPulse 2.5s ease-in-out infinite;
+}
+@keyframes biometricPulse {
+  0%,100% { box-shadow:0 0 0 0 rgba(199,125,255,0.35); }
+  50%      { box-shadow:0 0 0 8px rgba(199,125,255,0); }
+}
+.biometric-btn:hover { background:linear-gradient(135deg,rgba(79,195,247,0.22),rgba(199,125,255,0.28)); transform:translateY(-2px); box-shadow:0 6px 20px rgba(199,125,255,0.25); }
+.biometric-btn:active { transform:scale(0.97);animation:none; }
+.biometric-btn.hidden { display:none; }
+.biometric-icon { font-size:26px; animation:pulseAnim 2s ease-in-out infinite; }
+.biometric-divider {
+  display:flex;align-items:center;gap:10px;
+  margin:14px 0 4px;
+  color:var(--text-light);font-size:12px;font-family:'Baloo 2',cursive;font-weight:700;
+}
+.biometric-divider::before,.biometric-divider::after {
+  content:'';flex:1;height:1px;background:rgba(199,125,255,0.2);
+}
+.biometric-setup-toast {
+  display:none;
+  position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--mint),var(--sky));
+  color:white;padding:12px 20px;border-radius:50px;
+  font-family:'Baloo 2',cursive;font-weight:700;font-size:13px;
+  box-shadow:0 6px 24px rgba(107,203,119,0.4);
+  z-index:9999;white-space:nowrap;
+  animation:toastIn 0.3s cubic-bezier(.4,0,.2,1);
+}
+.biometric-setup-toast.show { display:block; }
+@keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(12px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--lavender-light);border-radius:3px;}
 
@@ -1179,6 +1231,15 @@ header::before {
     <span class="login-mascot">🐾</span>
     <div class="login-title">MF Whiskers</div>
     <span class="login-sub">✦ pet care companion ✦</span>
+
+    <!-- Biometric button — shown when a credential is registered -->
+    <button class="biometric-btn hidden" id="biometricBtn" onclick="doBiometricLogin()">
+      <span class="biometric-icon" id="biometricIcon">👆</span>
+      <span id="biometricBtnLabel">Sign in with Biometrics</span>
+    </button>
+
+    <div class="biometric-divider" id="biometricDivider" style="display:none;">or use password</div>
+
     <div class="login-field">
       <label>Username</label>
       <span class="field-icon">🐱</span>
@@ -1194,6 +1255,9 @@ header::before {
     <div class="login-paws">🐾 🐾 🐾 🐾 🐾</div>
   </div>
 </div>
+
+<!-- Biometric setup toast -->
+<div class="biometric-setup-toast" id="biometricToast">✅ Biometrics enabled!</div>
 
 <!-- Loading -->
 <div id="loadingOverlay">
@@ -1223,6 +1287,7 @@ header::before {
     <div style="display:flex;gap:8px;align-items:center;">
       <div class="user-chip" id="headerUserChip">👋 admin</div>
       <button class="logout-btn" id="userMgmtBtn" onclick="openUserMgmt()" style="display:none;">👥 Users</button>
+      <button class="logout-btn" id="biometricSetupBtn" onclick="setupBiometric()" style="display:none;" title="Enable biometric login">👆</button>
       <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
     </div>
   </div>
@@ -1959,6 +2024,198 @@ header::before {
 // users stored in Firebase at /users, seeded with default admin
 let currentUser = null; // { username, role }
 
+/* ═══════════════════════════════════════
+   BIOMETRIC AUTH (WebAuthn)
+   Works on: iOS Safari (Face ID / Touch ID)
+             Android Chrome (Fingerprint)
+   Requires: HTTPS (GitHub Pages qualifies)
+═══════════════════════════════════════ */
+
+// Storage key for credential IDs: { username -> credentialId (base64) }
+const BIOMETRIC_STORE_KEY = 'mfw_biometric_creds';
+
+function isBiometricAvailable(){
+  return !!(window.PublicKeyCredential &&
+    typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function');
+}
+
+async function checkBiometricAvailable(){
+  if(!isBiometricAvailable()) return false;
+  try { return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); }
+  catch(e){ return false; }
+}
+
+// Convert base64url string to Uint8Array
+function b64ToUint8(b64){
+  const b64std = b64.replace(/-/g,'+').replace(/_/g,'/');
+  const bin = atob(b64std);
+  return Uint8Array.from(bin, c=>c.charCodeAt(0));
+}
+// Convert ArrayBuffer / Uint8Array to base64url string
+function bufToB64(buf){
+  const bytes = new Uint8Array(buf);
+  let bin='';
+  bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+function getBiometricCreds(){
+  try{ return JSON.parse(localStorage.getItem(BIOMETRIC_STORE_KEY)||'{}'); }
+  catch(e){ return {}; }
+}
+function saveBiometricCreds(creds){
+  try{ localStorage.setItem(BIOMETRIC_STORE_KEY, JSON.stringify(creds)); }catch(e){}
+}
+function hasBiometricForUser(username){
+  return !!getBiometricCreds()[username];
+}
+function anyBiometricRegistered(){
+  return Object.keys(getBiometricCreds()).length > 0;
+}
+
+// Register biometric for the currently logged-in user
+async function setupBiometric(){
+  if(!currentUser){ alert('Please log in first.'); return; }
+  const canUse = await checkBiometricAvailable();
+  if(!canUse){
+    alert('Biometric authentication is not available on this device or browser.\n\niOS: requires Safari on iOS 14+\nAndroid: requires Chrome 67+\nMust be served over HTTPS.');
+    return;
+  }
+  try{
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const userId    = crypto.getRandomValues(new Uint8Array(16));
+    const cred = await navigator.credentials.create({
+      publicKey:{
+        challenge,
+        rp:{ name:'MF Whiskers', id: location.hostname },
+        user:{ id: userId, name: currentUser.username, displayName: currentUser.username },
+        pubKeyCredParams:[
+          {type:'public-key', alg:-7},   // ES256
+          {type:'public-key', alg:-257},  // RS256 (fallback)
+        ],
+        authenticatorSelection:{
+          authenticatorAttachment:'platform',   // device-native only (no USB keys)
+          userVerification:'required',           // must verify user (biometric / PIN)
+          residentKey:'preferred',
+        },
+        timeout: 60000,
+        attestation:'none',
+      }
+    });
+    // Store the credential ID keyed by username
+    const creds = getBiometricCreds();
+    creds[currentUser.username] = bufToB64(cred.rawId);
+    saveBiometricCreds(creds);
+
+    // Show success toast
+    showBiometricToast('👆 Biometrics enabled!');
+    // Update UI
+    document.getElementById('biometricSetupBtn').title = 'Biometrics enabled ✓';
+    document.getElementById('biometricSetupBtn').textContent = '✅';
+  }catch(e){
+    if(e.name === 'NotAllowedError') return; // user cancelled — silent
+    console.error('WebAuthn register error:', e);
+    alert('Could not enable biometrics: '+e.message);
+  }
+}
+
+// Attempt biometric login
+async function doBiometricLogin(){
+  const canUse = await checkBiometricAvailable();
+  if(!canUse){ return; }
+  const creds = getBiometricCreds();
+  const usernames = Object.keys(creds);
+  if(!usernames.length) return;
+
+  try{
+    const allowList = usernames.map(u=>({
+      type:'public-key',
+      id: b64ToUint8(creds[u]),
+      transports:['internal'],
+    }));
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const assertion = await navigator.credentials.get({
+      publicKey:{
+        challenge,
+        allowCredentials: allowList,
+        userVerification:'required',
+        timeout:60000,
+      }
+    });
+
+    // Find which user this credential belongs to
+    const credId = bufToB64(assertion.rawId);
+    const matchedUsername = usernames.find(u => creds[u] === credId);
+    if(!matchedUsername) throw new Error('Credential not matched');
+
+    // Load users and find the matching one
+    const users = await loadUsers();
+    const match = users.find(x=>x.username===matchedUsername);
+    if(!match) throw new Error('User no longer exists');
+
+    // Auth successful
+    currentUser = { username: match.username, role: match.role };
+    try{ sessionStorage.setItem('mfw_session', JSON.stringify(currentUser)); }catch(e){}
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('headerUserChip').textContent = `👋 ${currentUser.username}`;
+    document.getElementById('userMgmtBtn').style.display = currentUser.role==='admin'?'flex':'none';
+    await init();
+    updateAdminButtons();
+    updateBiometricSetupBtn();
+  }catch(e){
+    if(e.name==='NotAllowedError') return; // user cancelled
+    console.error('WebAuthn auth error:', e);
+    // Fall through silently — password fields still available
+  }
+}
+
+function showBiometricToast(msg){
+  const t = document.getElementById('biometricToast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// Show/hide the biometric button on the login screen
+async function updateBiometricLoginBtn(){
+  const canUse = await checkBiometricAvailable();
+  const btn    = document.getElementById('biometricBtn');
+  const div    = document.getElementById('biometricDivider');
+  const icon   = document.getElementById('biometricIcon');
+  const label  = document.getElementById('biometricBtnLabel');
+  if(!btn) return;
+  if(canUse && anyBiometricRegistered()){
+    btn.classList.remove('hidden');
+    if(div) div.style.display='flex';
+    // Detect Face ID vs fingerprint
+    const ua = navigator.userAgent;
+    if(/iPhone|iPad/.test(ua)){
+      icon.textContent = '🔓'; label.textContent = 'Sign in with Face ID / Touch ID';
+    } else {
+      icon.textContent = '👆'; label.textContent = 'Sign in with Fingerprint';
+    }
+  } else {
+    btn.classList.add('hidden');
+    if(div) div.style.display='none';
+  }
+}
+
+// Show/hide the setup button in the header
+async function updateBiometricSetupBtn(){
+  const canUse = await checkBiometricAvailable();
+  const btn = document.getElementById('biometricSetupBtn');
+  if(!btn) return;
+  if(canUse && currentUser){
+    btn.style.display = 'flex';
+    const already = hasBiometricForUser(currentUser.username);
+    btn.textContent = already ? '✅' : '👆';
+    btn.title = already ? 'Biometrics active — tap to re-register' : 'Enable biometric login';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
 // Default users (used only if Firebase has nothing yet)
 const DEFAULT_USERS = [
   { username:'admin', password:'1726', role:'admin' }
@@ -2017,6 +2274,7 @@ async function doLogin() {
   document.getElementById('userMgmtBtn').style.display = currentUser.role==='admin' ? 'flex' : 'none';
   await init();
   updateAdminButtons();
+  updateBiometricSetupBtn();
 }
 
 function doLogout() {
@@ -2026,6 +2284,9 @@ function doLogout() {
   document.getElementById('loginUser').value='';
   document.getElementById('loginPass').value='';
   document.getElementById('loginError').classList.remove('show');
+  document.getElementById('biometricSetupBtn').style.display='none';
+  // Refresh biometric button visibility for next login
+  updateBiometricLoginBtn();
 }
 
 async function checkSession() {
@@ -2042,7 +2303,7 @@ async function checkSession() {
         document.getElementById('headerUserChip').textContent = `👋 ${currentUser.username}`;
         document.getElementById('userMgmtBtn').style.display = currentUser.role==='admin' ? 'flex' : 'none';
         // Will be called again after init(), but set early for UI consistency
-        setTimeout(updateAdminButtons, 100);
+        setTimeout(()=>{ updateAdminButtons(); updateBiometricSetupBtn(); }, 100);
         return true;
       }
     }
@@ -2291,7 +2552,8 @@ async function init(){
   if (hasSession) {
     await init();
   } else {
-    // Just hide the app loading overlay; login screen is already visible
+    // Show biometric button on login screen if a credential exists
+    updateBiometricLoginBtn();
     document.getElementById('loadingOverlay').style.display='none';
   }
 })();
@@ -2796,7 +3058,7 @@ function renderHealth(){
 ═══════════════════════════════════════ */
 function openModal(id){
   document.getElementById('modal-'+id).classList.add('open');
-  const today=new Date().toISOString().split('T')[0];
+  const today=toDateStrGMT8(nowGMT8());
   ['newVaxDate','newVaxDue','newDewormDate','newDewormDue','newPhotoDate','newWeightDate','newNoteDate'].forEach(f=>{const el=document.getElementById(f);if(el&&!el.value)el.value=today;});
   if(id==='addPet') updateBreedOptions();
   if(id==='addFood'){tempRating=0;updateStarPicker(0);}
@@ -2839,7 +3101,7 @@ function addPet(){
   const birthday=document.getElementById('newPetBday').value;
   const weight=parseFloat(document.getElementById('newPetWeight').value)||0;
   const gender=document.getElementById('newPetGender').value;
-  state.pets.push({id:Date.now(),name,species,breed,birthday,weight,gender,profilePic:null,vaccines:[],dewormings:[],gallery:[],foods:[],weights:[{val:weight,date:birthday||new Date().toISOString().split('T')[0],note:'Initial weight'}],notes:[],vet:{name:'',clinic:'',phone:'',email:''}});
+  state.pets.push({id:Date.now(),name,species,breed,birthday,weight,gender,profilePic:null,vaccines:[],dewormings:[],gallery:[],foods:[],weights:[{val:weight,date:birthday||toDateStrGMT8(nowGMT8()),note:'Initial weight'}],notes:[],vet:{name:'',clinic:'',phone:'',email:''}});
   state.activePet=state.pets.length-1;
   closeModal('addPet');document.getElementById('newPetName').value='';
   renderPetSelector();renderAll();saveState();
@@ -2866,7 +3128,7 @@ function addVaccine(){
   const pet=getPet();
   const name=document.getElementById('newVaxName').value,date=document.getElementById('newVaxDate').value,due=document.getElementById('newVaxDue').value;
   const clinic=document.getElementById('newVaxClinic').value,batch=document.getElementById('newVaxBatch').value,notes=document.getElementById('newVaxNotes').value;
-  const today=new Date().toISOString().split('T')[0];
+  const today=toDateStrGMT8(nowGMT8());
   const status=date&&date<=today?(due&&due<today?'overdue':'done'):'upcoming';
   pet.vaccines.push({id:Date.now(),name,date,due,clinic,batch,notes,status});
   closeModal('addVaccine');renderAll();saveState();
@@ -2877,7 +3139,7 @@ function addDeworm(){
   const pet=getPet();
   const med=document.getElementById('newDewormMed').value,date=document.getElementById('newDewormDate').value,due=document.getElementById('newDewormDue').value;
   const dose=document.getElementById('newDewormDose').value,notes=document.getElementById('newDewormNotes').value;
-  const today=new Date().toISOString().split('T')[0];
+  const today=toDateStrGMT8(nowGMT8());
   pet.dewormings.push({id:Date.now(),med,date,due,dose,notes,status:date&&date<=today?'done':'next'});
   closeModal('addDeworm');renderAll();saveState();
 }
@@ -3149,13 +3411,11 @@ window.switchTab = function(tab){
 /* ═══════════════════════════════════════
    ROUTINE — CALENDAR + DAILY CHECKLIST
 ═══════════════════════════════════════ */
-let calYear  = new Date().getFullYear();
-let calMonth = new Date().getMonth();
-// Always a live reference — use a getter pattern so it's always today on first open
-let selectedDate = (()=>{ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
-
-function toDateStr(d){ return d.toISOString().split('T')[0]; }
-function todayStr(){ return new Date().toISOString().split('T')[0]; }
+// All date logic uses GMT+8 via nowGMT8() / toDateStrGMT8() defined above
+let calYear  = nowGMT8().getFullYear();
+let calMonth = nowGMT8().getMonth();
+let selectedDate = toDateStrGMT8(nowGMT8());
+// todayStr() and toDateStr() already defined above — no redefinition
 
 function getRoutine(){
   if(!state.routine) state.routine={recurring:[],done:{},onceTasks:[]};
@@ -3224,9 +3484,9 @@ function changeCalMonth(dir){
   renderCalendar();
 }
 function goToday(){
-  const now=new Date();
+  const now=nowGMT8();
   calYear=now.getFullYear();calMonth=now.getMonth();
-  selectedDate=todayStr();
+  selectedDate=toDateStrGMT8(now);
   renderCalendar();renderChecklist();
 }
 
@@ -3401,11 +3661,10 @@ const _origSwitchTab=switchTab;
 window.switchTab=function(tab){
   _origSwitchTab(tab);
   if(tab==='routine'){
-    // Always reset to real today — handles crossing midnight or revisiting next day
-    const now=new Date();
-    calYear=now.getFullYear();
-    calMonth=now.getMonth();
-    selectedDate=toDateStr(now);
+    const now = nowGMT8();
+    calYear      = now.getFullYear();
+    calMonth     = now.getMonth();
+    selectedDate = toDateStrGMT8(now);
     renderRoutine();
   }
   if(tab==='overview') renderRoutineDashboard();
@@ -3414,16 +3673,18 @@ window.switchTab=function(tab){
 // Live clock: refresh every 60s — keeps nav date, routine, cat fact fresh
 setInterval(()=>{
   updateRoutineNavDate();
-  const homeActive=document.getElementById('panel-overview')?.classList.contains('active');
+  // Always get the real current GMT+8 date
+  const realToday = toDateStrGMT8(nowGMT8());
+  const homeActive = document.getElementById('panel-overview')?.classList.contains('active');
   if(homeActive){ renderCatFact(); renderRoutineDashboard(); }
-  const routineActive=document.getElementById('panel-routine')?.classList.contains('active');
+  const routineActive = document.getElementById('panel-routine')?.classList.contains('active');
   if(routineActive){
-    const now=nowGMT8();
-    const newDate=toDateStrGMT8(now);
-    if(newDate!==selectedDate){
-      calYear=now.getFullYear();
-      calMonth=now.getMonth();
-      selectedDate=newDate;
+    // If the day has changed (e.g. midnight crossed), advance calendar to new day
+    if(realToday !== selectedDate){
+      const now = nowGMT8();
+      calYear  = now.getFullYear();
+      calMonth = now.getMonth();
+      selectedDate = realToday;
     }
     renderRoutine();
   }
