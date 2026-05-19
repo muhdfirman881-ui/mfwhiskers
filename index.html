@@ -1490,8 +1490,13 @@ header::before {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
         <div class="card-title" style="color:var(--sky);margin-bottom:0;">✅ <span id="checklistDayLabel">Today's</span> Checklist</div>
         <div style="display:flex;gap:8px;">
+          <button id="notifToggleBtn" onclick="toggleNotifications()"
+            title="Enable task notifications"
+            style="background:rgba(255,255,255,0.18);color:white;border:1.5px solid rgba(255,255,255,0.4);padding:7px 12px;border-radius:50px;font-size:15px;cursor:pointer;font-family:'Baloo 2',cursive;font-weight:700;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:all 0.2s;">🔕</button>
+          <button onclick="openNotifSettings()" title="Notification settings"
+            style="background:var(--lavender-light);color:var(--lavender-deep);border:none;padding:7px 12px;border-radius:50px;font-size:13px;cursor:pointer;font-family:'Baloo 2',cursive;font-weight:700;touch-action:manipulation;">⚙️</button>
           <button class="btn btn-secondary" style="font-size:12px;padding:7px 12px;" onclick="openModal('addTask')">➕ Add Task</button>
-          <button class="btn btn-edit" id="manageTasksBtn" style="font-size:12px;padding:7px 12px;" onclick="openModal('manageTasks')">⚙️ Manage</button>
+          <button class="btn btn-edit" id="manageTasksBtn" style="font-size:12px;padding:7px 12px;" onclick="openModal('manageTasks')">🗂️ Manage</button>
         </div>
       </div>
       <!-- Progress bar -->
@@ -2015,6 +2020,56 @@ header::before {
   </div>
 </div>
 
+<!-- NOTIFICATION SETTINGS MODAL -->
+<div class="modal-bg" id="modal-notifSettings">
+  <div class="modal">
+    <div class="modal-title">🔔 Notification Settings</div>
+
+    <!-- Status banner -->
+    <div id="notifStatusBanner" style="border-radius:14px;padding:12px 14px;margin-bottom:16px;font-family:'Baloo 2',cursive;font-size:13px;font-weight:700;text-align:center;"></div>
+
+    <!-- Enable toggle row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--lavender-light);border-radius:14px;margin-bottom:12px;">
+      <div>
+        <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:var(--text-dark);">Enable Notifications</div>
+        <div style="font-size:11px;color:var(--text-medium);margin-top:2px;">Get reminded for each task</div>
+      </div>
+      <label style="position:relative;display:inline-block;width:48px;height:26px;cursor:pointer;">
+        <input type="checkbox" id="notifEnabledToggle" onchange="handleNotifToggleChange(this)" style="opacity:0;width:0;height:0;">
+        <span style="position:absolute;inset:0;background:#ccc;border-radius:50px;transition:0.3s;" id="notifToggleSlider"></span>
+        <span id="notifToggleKnob" style="position:absolute;left:3px;top:3px;width:20px;height:20px;background:white;border-radius:50%;transition:0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
+      </label>
+    </div>
+
+    <!-- Reminder time -->
+    <div class="form-row">
+      <label>Remind me before task</label>
+      <select id="notifMinutesBefore" style="font-size:16px !important;">
+        <option value="0">At the exact time</option>
+        <option value="5">5 minutes before</option>
+        <option value="10">10 minutes before</option>
+        <option value="15">15 minutes before</option>
+        <option value="30">30 minutes before</option>
+        <option value="60">1 hour before</option>
+      </select>
+    </div>
+
+    <!-- iOS / Android instructions -->
+    <div style="background:var(--sky-light);border-radius:14px;padding:12px 14px;margin-top:8px;">
+      <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:12px;color:#0A6B9D;margin-bottom:6px;">📱 For background notifications:</div>
+      <div style="font-size:11px;color:var(--text-medium);line-height:1.7;">
+        <b>iPhone:</b> Add to Home Screen via Safari Share → "Add to Home Screen", then open app from Home Screen<br>
+        <b>Android:</b> Chrome will prompt or use Chrome menu → "Add to Home Screen"
+      </div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-danger" onclick="document.getElementById('modal-notifSettings').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNotifSettingsFromModal()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
 <input type="file" id="hiddenAvatarInput" accept="image/*" style="display:none">
 
 <script>
@@ -2521,6 +2576,7 @@ async function init(){
   renderPetSelector();
   renderAll();
   updateRoutineNavDate();
+  await initNotifications();
   document.getElementById('loadingOverlay').style.display='none';
 }
 
@@ -3688,7 +3744,257 @@ setInterval(()=>{
     }
     renderRoutine();
   }
+  // Check for due task notifications every minute
+  checkDueTaskNotifications();
 },60000);
+
+/* ═══════════════════════════════════════════════════════
+   PUSH NOTIFICATIONS — Full implementation
+   • Uses sw.js at same directory (required for real push)
+   • Falls back to Notification API when page is open
+   • Works on: Android Chrome, iOS Safari 16.4+ (HTTPS + A2HS)
+════════════════════════════════════════════════════════ */
+const NOTIF_SETTINGS_KEY = 'mfw_notif_settings';
+let swRegistration  = null;
+let notifLastFired  = {};   // prevent double-fire within same minute
+
+/* ── Settings helpers ── */
+function getNotifSettings(){
+  try{ const r=localStorage.getItem(NOTIF_SETTINGS_KEY); return r?JSON.parse(r):{enabled:false,minutesBefore:5}; }
+  catch(e){ return {enabled:false,minutesBefore:5}; }
+}
+function saveNotifSettings(s){ try{localStorage.setItem(NOTIF_SETTINGS_KEY,JSON.stringify(s));}catch(e){} }
+
+/* ── Register the real sw.js ── */
+async function registerSW(){
+  if(!('serviceWorker' in navigator)) return null;
+  try{
+    // Register sw.js from same folder as the HTML
+    swRegistration = await navigator.serviceWorker.register('./sw.js', { scope:'./' });
+    await navigator.serviceWorker.ready;
+    console.log('✅ SW registered');
+    return swRegistration;
+  } catch(e){
+    console.warn('SW registration failed:', e.message);
+    return null;
+  }
+}
+
+/* ── Request permission ── */
+async function requestNotifPermission(){
+  if(!('Notification' in window)) return 'unsupported';
+  if(Notification.permission==='granted') return 'granted';
+  if(Notification.permission==='denied')  return 'denied';
+  return await Notification.requestPermission();
+}
+
+/* ── Toggle on/off (called by 🔔 button) ── */
+async function toggleNotifications(){
+  const s = getNotifSettings();
+  if(!s.enabled){
+    // Check support
+    if(!('Notification' in window)){
+      showBiometricToast('❌ Your browser doesn\'t support notifications');
+      return;
+    }
+    const perm = await requestNotifPermission();
+    if(perm==='denied'){
+      showBiometricToast('❌ Notifications blocked. Enable in phone Settings → Browser → Notifications');
+      updateNotifToggleUI(); return;
+    }
+    if(perm!=='granted'){
+      showBiometricToast('❌ Notification permission not granted');
+      updateNotifToggleUI(); return;
+    }
+    const reg = await registerSW();
+    if(!reg){
+      // SW failed (likely not on HTTPS) — fall back to foreground-only mode
+      showBiometricToast('🔔 Notifications ON (foreground only — needs HTTPS for background)');
+    } else {
+      showBiometricToast('🔔 Notifications enabled!');
+    }
+    s.enabled = true;
+    saveNotifSettings(s);
+  } else {
+    s.enabled = false;
+    saveNotifSettings(s);
+    showBiometricToast('🔕 Notifications disabled');
+  }
+  updateNotifToggleUI();
+}
+
+/* ── Update the bell button visuals ── */
+function updateNotifToggleUI(){
+  const s   = getNotifSettings();
+  const btn = document.getElementById('notifToggleBtn');
+  if(!btn) return;
+  const on  = s.enabled && ('Notification' in window) && Notification.permission==='granted';
+  btn.textContent = on ? '🔔' : '🔕';
+  btn.title       = on ? 'Notifications ON — tap to manage' : 'Enable task notifications';
+  btn.style.background   = on ? 'rgba(107,203,119,0.25)' : 'rgba(255,255,255,0.18)';
+  btn.style.borderColor  = on ? 'rgba(107,203,119,0.5)'  : 'rgba(255,255,255,0.4)';
+}
+
+/* ── Fire a notification ──
+   Tries SW.showNotification first (works in background),
+   falls back to new Notification() (foreground only) ── */
+async function fireNotification(title, body, tag){
+  if(!('Notification' in window)) return;
+  if(Notification.permission !== 'granted') return;
+  const icon = document.getElementById('appleIcon')?.href || '';
+
+  // Check SW is active and ready
+  const sw = swRegistration?.active
+    ? swRegistration
+    : (await navigator.serviceWorker?.getRegistration?.('./') || null);
+
+  if(sw){
+    try{
+      await sw.showNotification(title, {
+        body, tag, icon, badge: icon,
+        renotify: true,
+        vibrate:  [200, 100, 200],
+        requireInteraction: false,
+      });
+      return;
+    } catch(e){ /* fall through */ }
+  }
+  // Fallback — only works when page is visible
+  try{ new Notification(title, { body, tag, icon }); } catch(e){}
+}
+
+/* ── Send task list to SW for background processing ── */
+function postTasksToSW(){
+  const s = getNotifSettings();
+  if(!s.enabled || Notification.permission !== 'granted') return;
+
+  const now     = nowGMT8();
+  const today   = toDateStrGMT8(now);
+  const nowMins = now.getHours()*60 + now.getMinutes();
+  const icon    = document.getElementById('appleIcon')?.href || '';
+  const r       = getRoutine();
+
+  const tasks = tasksForDate(today).map(t => ({
+    ...t,
+    petName: t.petId==='all' ? 'All Cats'
+             : (state.pets.find(p=>String(p.id)===String(t.petId))?.name || 'All Cats'),
+  }));
+
+  // Message the SW — it will check and fire notifications
+  if(navigator.serviceWorker?.controller){
+    navigator.serviceWorker.controller.postMessage({
+      type: 'CHECK_TASKS',
+      tasks, nowMins, today, minutesBefore: s.minutesBefore||5,
+      done: r.done, iconUrl: icon,
+    });
+  }
+}
+
+/* ── Check due tasks every minute (foreground fallback) ── */
+function checkDueTaskNotifications(){
+  const s = getNotifSettings();
+  if(!s.enabled || Notification.permission !== 'granted') return;
+
+  const now     = nowGMT8();
+  const today   = toDateStrGMT8(now);
+  const nowMins = now.getHours()*60 + now.getMinutes();
+  const before  = s.minutesBefore || 5;
+
+  // Also send to SW for background coverage
+  postTasksToSW();
+
+  tasksForDate(today).forEach(t => {
+    if(!t.time) return;
+    const [tH,tM]  = t.time.split(':').map(Number);
+    const taskMins = tH*60 + tM;
+    const diff     = taskMins - nowMins;
+    const petName  = t.petId==='all' ? 'All Cats'
+                     : (state.pets.find(p=>String(p.id)===String(t.petId))?.name || 'All Cats');
+
+    if(diff>=0 && diff<=1){
+      const k = `${today}:${t.id}:now`;
+      if(!notifLastFired[k] && !isDone(today,t.id)){
+        notifLastFired[k] = Date.now();
+        fireNotification(`${t.emoji||'🐾'} ${t.name}`, `⏰ Due now  ·  ${petName}`, `mfw-now-${t.id}`);
+      }
+    }
+    if(before>0 && diff===before){
+      const k = `${today}:${t.id}:remind`;
+      if(!notifLastFired[k] && !isDone(today,t.id)){
+        notifLastFired[k] = Date.now();
+        fireNotification(`⏰ In ${before} min: ${t.name}`, `${t.emoji||'🐾'} ${petName}  ·  at ${t.time}`, `mfw-remind-${t.id}`);
+      }
+    }
+  });
+
+  // Clean up entries older than 24h
+  const cut = Date.now() - 86400000;
+  Object.keys(notifLastFired).forEach(k=>{ if(notifLastFired[k]<cut) delete notifLastFired[k]; });
+}
+
+/* ── Notification settings modal ── */
+function openNotifSettings(){
+  const s   = getNotifSettings();
+  const sel = document.getElementById('notifMinutesBefore');
+  if(sel) sel.value = String(s.minutesBefore||5);
+
+  const on  = s.enabled && ('Notification' in window) && Notification.permission==='granted';
+  const tog = document.getElementById('notifEnabledToggle');
+  if(tog) tog.checked = on;
+  updateToggleSlider(on);
+
+  // Status banner
+  const banner = document.getElementById('notifStatusBanner');
+  if(banner){
+    if(!('Notification' in window)){
+      banner.textContent = '❌ Your browser does not support notifications';
+      banner.style.cssText = 'background:#FFE8E8;color:#FF4757;border-radius:14px;padding:12px 14px;margin-bottom:16px;font-family:Baloo 2,cursive;font-size:13px;font-weight:700;text-align:center;';
+    } else if(Notification.permission==='denied'){
+      banner.textContent = '⚠️ Blocked — go to Settings → Browser → Notifications to allow';
+      banner.style.cssText = 'background:#FFF3B0;color:#9A7000;border-radius:14px;padding:12px 14px;margin-bottom:16px;font-family:Baloo 2,cursive;font-size:13px;font-weight:700;text-align:center;';
+    } else if(on){
+      banner.textContent = '✅ Notifications are active';
+      banner.style.cssText = 'background:var(--mint-light);color:#2A7A34;border-radius:14px;padding:12px 14px;margin-bottom:16px;font-family:Baloo 2,cursive;font-size:13px;font-weight:700;text-align:center;';
+    } else {
+      banner.textContent = '🔕 Notifications are off';
+      banner.style.cssText = 'background:var(--lavender-light);color:var(--lavender-deep);border-radius:14px;padding:12px 14px;margin-bottom:16px;font-family:Baloo 2,cursive;font-size:13px;font-weight:700;text-align:center;';
+    }
+  }
+  document.getElementById('modal-notifSettings').classList.add('open');
+}
+
+function updateToggleSlider(on){
+  const slider = document.getElementById('notifToggleSlider');
+  const knob   = document.getElementById('notifToggleKnob');
+  if(slider) slider.style.background = on ? 'var(--mint)' : '#ccc';
+  if(knob)   knob.style.transform    = on ? 'translateX(22px)' : 'translateX(0)';
+}
+
+async function handleNotifToggleChange(checkbox){
+  updateToggleSlider(checkbox.checked);
+  await toggleNotifications();
+  // Reopen to refresh status
+  setTimeout(openNotifSettings, 400);
+}
+
+function saveNotifSettingsFromModal(){
+  const s   = getNotifSettings();
+  const sel = document.getElementById('notifMinutesBefore');
+  if(sel) s.minutesBefore = parseInt(sel.value)||5;
+  saveNotifSettings(s);
+  document.getElementById('modal-notifSettings').classList.remove('open');
+  showBiometricToast('💾 Notification settings saved!');
+}
+
+/* ── Init on app start ── */
+async function initNotifications(){
+  const s = getNotifSettings();
+  if(s.enabled && ('Notification' in window) && Notification.permission==='granted'){
+    await registerSW();
+  }
+  updateNotifToggleUI();
+  checkDueTaskNotifications();
+}
 </script>
 </body>
 </html>
