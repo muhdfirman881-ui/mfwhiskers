@@ -3745,7 +3745,7 @@ setInterval(()=>{
 const NOTIF_SETTINGS_KEY = 'mfw_notif_settings';
 
 // ▼▼▼ PASTE YOUR VAPID KEY HERE ▼▼▼
-const FCM_VAPID_KEY = 'PASTE_YOUR_VAPID_KEY_HERE';
+const FCM_VAPID_KEY = 'BHFXWQ1_8gs4KvFVTzTbD9jFFtvB7Q2phR11O1Rwyi8TFbWdjFyhjBD_ZOjIZ0LK5TpZTo-zhT7UrMwTiSK8_Ms';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 let fcmMessaging   = null;
@@ -3791,7 +3791,7 @@ async function initFCM(){
       }
     });
 
-    if(Notification.permission==='granted' && FCM_VAPID_KEY !== 'PASTE_YOUR_VAPID_KEY_HERE'){
+    if(Notification.permission==='granted' && FCM_VAPID_KEY !== 'BHFXWQ1_8gs4KvFVTzTbD9jFFtvB7Q2phR11O1Rwyi8TFbWdjFyhjBD_ZOjIZ0LK5TpZTo-zhT7UrMwTiSK8_Ms'){
       await getFCMToken();
     }
   } catch(e){ console.warn('FCM init:',e.message); }
@@ -3800,7 +3800,7 @@ async function initFCM(){
 /* ── Step 3: Get FCM token and save to Firebase Realtime DB ── */
 async function getFCMToken(){
   if(!fcmMessaging || !swRegistration) return null;
-  if(FCM_VAPID_KEY === 'PASTE_YOUR_VAPID_KEY_HERE'){ console.warn('FCM: Add your VAPID key'); return null; }
+  if(FCM_VAPID_KEY === 'BHFXWQ1_8gs4KvFVTzTbD9jFFtvB7Q2phR11O1Rwyi8TFbWdjFyhjBD_ZOjIZ0LK5TpZTo-zhT7UrMwTiSK8_Ms'){ console.warn('FCM: Add your VAPID key'); return null; }
   try{
     const { getToken } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js');
     const token = await getToken(fcmMessaging,{ vapidKey:FCM_VAPID_KEY, serviceWorkerRegistration:swRegistration });
@@ -3856,7 +3856,7 @@ async function toggleNotifications(){
     if(!swRegistration) await registerFCMServiceWorker();
     await getFCMToken();
     s.enabled=true; saveNotifSettings(s);
-    const hasVapid=FCM_VAPID_KEY!=='PASTE_YOUR_VAPID_KEY_HERE';
+    const hasVapid=FCM_VAPID_KEY!=='BHFXWQ1_8gs4KvFVTzTbD9jFFtvB7Q2phR11O1Rwyi8TFbWdjFyhjBD_ZOjIZ0LK5TpZTo-zhT7UrMwTiSK8_Ms';
     showBiometricToast(fcmToken&&hasVapid?'🔔 Background notifications enabled!':hasVapid?'🔔 Notifications ON':'🔔 ON (add VAPID key for background)');
   } else {
     if(window.db&&currentUser&&fcmToken){
