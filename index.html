@@ -3856,7 +3856,7 @@ async function toggleNotifications(){
     if(!swRegistration) await registerFCMServiceWorker();
     await getFCMToken();
     s.enabled=true; saveNotifSettings(s);
-    const hasVapid=FCM_VAPID_KEY!=='PASTE_YOUR_VAPID_KEY_HERE';
+    const hasVapid=FCM_VAPID_KEY!=='BM95b-4j7NfxsaSXMw6tTNAvInp6jZsrflPYFfwwWA4BpNj3mcjwiYOmbOVk8YdgAzV7gskjeNwPCk0n0N7VrL8';
     showBiometricToast(fcmToken&&hasVapid?'🔔 Background notifications enabled!':hasVapid?'🔔 Notifications ON':'🔔 ON (add VAPID key for background)');
   } else {
     if(window.db&&currentUser&&fcmToken){
@@ -3917,7 +3917,7 @@ function openNotifSettings(){
   const tog=document.getElementById('notifEnabledToggle'); if(tog) tog.checked=on;
   updateToggleSlider(on);
   const b=document.getElementById('notifStatusBanner');
-  const hasVapid=FCM_VAPID_KEY!=='PASTE_YOUR_VAPID_KEY_HERE';
+  const hasVapid=FCM_VAPID_KEY!=='BM95b-4j7NfxsaSXMw6tTNAvInp6jZsrflPYFfwwWA4BpNj3mcjwiYOmbOVk8YdgAzV7gskjeNwPCk0n0N7VrL8';
   if(b){
     let txt,css;
     if(!('Notification' in window)){ txt='❌ Browser does not support notifications'; css='background:#FFE8E8;color:#FF4757;'; }
