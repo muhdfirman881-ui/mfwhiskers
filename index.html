@@ -3791,7 +3791,7 @@ async function initFCM(){
       }
     });
 
-    if(Notification.permission==='granted' && FCM_VAPID_KEY !== 'PASTE_YOUR_VAPID_KEY_HERE'){
+    if(Notification.permission==='granted' && FCM_VAPID_KEY !== 'BM95b-4j7NfxsaSXMw6tTNAvInp6jZsrflPYFfwwWA4BpNj3mcjwiYOmbOVk8YdgAzV7gskjeNwPCk0n0N7VrL8'){
       await getFCMToken();
     }
   } catch(e){ console.warn('FCM init:',e.message); }
@@ -3800,7 +3800,7 @@ async function initFCM(){
 /* ── Step 3: Get FCM token and save to Firebase Realtime DB ── */
 async function getFCMToken(){
   if(!fcmMessaging || !swRegistration) return null;
-  if(FCM_VAPID_KEY === 'PASTE_YOUR_VAPID_KEY_HERE'){ console.warn('FCM: Add your VAPID key'); return null; }
+  if(FCM_VAPID_KEY === 'BM95b-4j7NfxsaSXMw6tTNAvInp6jZsrflPYFfwwWA4BpNj3mcjwiYOmbOVk8YdgAzV7gskjeNwPCk0n0N7VrL8'){ console.warn('FCM: Add your VAPID key'); return null; }
   try{
     const { getToken } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js');
     const token = await getToken(fcmMessaging,{ vapidKey:FCM_VAPID_KEY, serviceWorkerRegistration:swRegistration });
