@@ -3732,45 +3732,113 @@ setInterval(()=>{
   checkDueTaskNotifications();
 },60000);
 
-/* ═══════════════════════════════════════════════════════
-   PUSH NOTIFICATIONS — Full implementation
-   • Uses sw.js at same directory (required for real push)
-   • Falls back to Notification API when page is open
-   • Works on: Android Chrome, iOS Safari 16.4+ (HTTPS + A2HS)
-════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   FCM PUSH NOTIFICATIONS — Firebase Cloud Messaging
+   ════════════════════════════════════════════════════════════
+   ONE-TIME SETUP (get your VAPID key):
+   1. https://console.firebase.google.com → project mfwhiskers-14946
+   2. ⚙️ Project Settings → Cloud Messaging tab
+   3. Web Push Certificates → "Generate key pair"
+   4. Copy the key pair string
+   5. Replace PASTE_YOUR_VAPID_KEY_HERE below
+   ════════════════════════════════════════════════════════════ */
 const NOTIF_SETTINGS_KEY = 'mfw_notif_settings';
-let swRegistration  = null;
-let notifLastFired  = {};   // prevent double-fire within same minute
 
-/* ── Settings helpers ── */
+// ▼▼▼ PASTE YOUR VAPID KEY HERE ▼▼▼
+const FCM_VAPID_KEY = 'PASTE_YOUR_VAPID_KEY_HERE';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+let fcmMessaging   = null;
+let fcmToken       = null;
+let swRegistration = null;
+let notifLastFired = {};
+
 function getNotifSettings(){
   try{ const r=localStorage.getItem(NOTIF_SETTINGS_KEY); return r?JSON.parse(r):{enabled:false,minutesBefore:5}; }
   catch(e){ return {enabled:false,minutesBefore:5}; }
 }
 function saveNotifSettings(s){ try{localStorage.setItem(NOTIF_SETTINGS_KEY,JSON.stringify(s));}catch(e){} }
 
-/* ── Register the real sw.js ── */
-async function registerSW(){
+/* ── Step 1: Register sw.js (must happen before getToken) ── */
+async function registerFCMServiceWorker(){
   if(!('serviceWorker' in navigator)) return null;
   try{
-    // Must be at same origin as the page — sw.js in same folder
-    const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-    // Wait for the SW to become active
-    if(reg.installing){
-      await new Promise(resolve => {
-        reg.installing.addEventListener('statechange', function(){ if(this.state==='activated') resolve(); });
-      });
-    }
-    swRegistration = reg.active ? reg : await navigator.serviceWorker.ready.then(r=>{ swRegistration=r; return r; });
-    console.log('✅ SW registered and active');
-    return swRegistration;
+    const reg = await navigator.serviceWorker.register('./sw.js',{ scope:'./' });
+    await navigator.serviceWorker.ready;
+    swRegistration = reg;
+    console.log('✅ FCM SW registered');
+    return reg;
   } catch(e){
-    console.warn('SW registration failed (requires HTTPS + same-origin sw.js):', e.message);
+    console.warn('SW register failed (need HTTPS + sw.js same folder):',e.message);
     return null;
   }
 }
 
-/* ── Request permission ── */
+/* ── Step 2: Init Firebase Messaging and handle foreground messages ── */
+async function initFCM(){
+  if(!('Notification' in window) || !window.firebaseApp) return;
+  try{
+    const { getMessaging, onMessage } = await import(
+      'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js'
+    );
+    fcmMessaging = getMessaging(window.firebaseApp);
+
+    // Foreground: show notification when app tab is visible
+    onMessage(fcmMessaging, payload => {
+      const n = payload.notification || payload.data || {};
+      if(Notification.permission==='granted'){
+        try{ new Notification(n.title||'🐾 MF Whiskers',{body:n.body||'',icon:window.APP_ICON_URL||'',tag:(payload.data||{}).tag||'mfw-fg'}); }catch(e){}
+      }
+    });
+
+    if(Notification.permission==='granted' && FCM_VAPID_KEY !== 'PASTE_YOUR_VAPID_KEY_HERE'){
+      await getFCMToken();
+    }
+  } catch(e){ console.warn('FCM init:',e.message); }
+}
+
+/* ── Step 3: Get FCM token and save to Firebase Realtime DB ── */
+async function getFCMToken(){
+  if(!fcmMessaging || !swRegistration) return null;
+  if(FCM_VAPID_KEY === 'PASTE_YOUR_VAPID_KEY_HERE'){ console.warn('FCM: Add your VAPID key'); return null; }
+  try{
+    const { getToken } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js');
+    const token = await getToken(fcmMessaging,{ vapidKey:FCM_VAPID_KEY, serviceWorkerRegistration:swRegistration });
+    if(!token){ console.warn('FCM: No token'); return null; }
+    if(token===fcmToken) return token;
+    fcmToken = token;
+    if(window.db && currentUser){
+      const { ref, set } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+      const key = btoa(token).replace(/[^a-zA-Z0-9]/g,'').slice(0,40);
+      await set(ref(window.db,`fcm_tokens/${currentUser.username}/${key}`),{
+        token,
+        platform: /iPhone|iPad/.test(navigator.userAgent)?'ios':/Android/.test(navigator.userAgent)?'android':'web',
+        device: navigator.userAgent.slice(0,100),
+        savedAt: new Date().toISOString(),
+      });
+      console.log('✅ FCM token saved');
+    }
+    return token;
+  } catch(e){
+    console.warn('FCM getToken:',e.message);
+    setTimeout(getFCMToken,5000);
+    return null;
+  }
+}
+
+/* ── Post tasks to SW for background check ── */
+function postTasksToSW(){
+  const s=getNotifSettings();
+  if(!s.enabled||Notification.permission!=='granted') return;
+  const now=nowGMT8(), today=toDateStrGMT8(now);
+  const tasks=tasksForDate(today).map(t=>({...t,
+    petName:t.petId==='all'?'All Cats':(state.pets.find(p=>String(p.id)===String(t.petId))?.name||'All Cats'),
+  }));
+  const sw=swRegistration?.active||navigator.serviceWorker?.controller;
+  if(sw) sw.postMessage({type:'CHECK_TASKS',tasks,nowMins:now.getHours()*60+now.getMinutes(),
+    today,minutesBefore:s.minutesBefore||5,done:getRoutine().done,iconUrl:window.APP_ICON_URL||''});
+}
+
 async function requestNotifPermission(){
   if(!('Notification' in window)) return 'unsupported';
   if(Notification.permission==='granted') return 'granted';
@@ -3778,213 +3846,112 @@ async function requestNotifPermission(){
   return await Notification.requestPermission();
 }
 
-/* ── Toggle on/off (called by 🔔 button) ── */
 async function toggleNotifications(){
-  const s = getNotifSettings();
+  const s=getNotifSettings();
   if(!s.enabled){
-    // Check support
-    if(!('Notification' in window)){
-      showBiometricToast('❌ Your browser doesn\'t support notifications');
-      return;
-    }
-    const perm = await requestNotifPermission();
-    if(perm==='denied'){
-      showBiometricToast('❌ Notifications blocked. Enable in phone Settings → Browser → Notifications');
-      updateNotifToggleUI(); return;
-    }
-    if(perm!=='granted'){
-      showBiometricToast('❌ Notification permission not granted');
-      updateNotifToggleUI(); return;
-    }
-    const reg = await registerSW();
-    if(!reg){
-      // SW failed (likely not on HTTPS) — fall back to foreground-only mode
-      showBiometricToast('🔔 Notifications ON (foreground only — needs HTTPS for background)');
-    } else {
-      showBiometricToast('🔔 Notifications enabled!');
-    }
-    s.enabled = true;
-    saveNotifSettings(s);
+    if(!('Notification' in window)){ showBiometricToast('❌ Browser does not support notifications'); return; }
+    const perm=await requestNotifPermission();
+    if(perm==='denied'){ showBiometricToast('❌ Blocked — see Settings guide in ⚙️'); updateNotifToggleUI(); return; }
+    if(perm!=='granted'){ updateNotifToggleUI(); return; }
+    if(!swRegistration) await registerFCMServiceWorker();
+    await getFCMToken();
+    s.enabled=true; saveNotifSettings(s);
+    const hasVapid=FCM_VAPID_KEY!=='PASTE_YOUR_VAPID_KEY_HERE';
+    showBiometricToast(fcmToken&&hasVapid?'🔔 Background notifications enabled!':hasVapid?'🔔 Notifications ON':'🔔 ON (add VAPID key for background)');
   } else {
-    s.enabled = false;
-    saveNotifSettings(s);
+    if(window.db&&currentUser&&fcmToken){
+      try{
+        const {ref,set}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+        await set(ref(window.db,`fcm_tokens/${currentUser.username}/${btoa(fcmToken).replace(/[^a-zA-Z0-9]/g,'').slice(0,40)}`),null);
+      }catch(e){}
+    }
+    fcmToken=null; s.enabled=false; saveNotifSettings(s);
     showBiometricToast('🔕 Notifications disabled');
   }
   updateNotifToggleUI();
 }
 
-/* ── Update the bell button visuals ── */
 function updateNotifToggleUI(){
-  const s   = getNotifSettings();
-  const btn = document.getElementById('notifToggleBtn');
+  const s=getNotifSettings(), btn=document.getElementById('notifToggleBtn');
   if(!btn) return;
-  const on  = s.enabled && ('Notification' in window) && Notification.permission==='granted';
-  btn.textContent = on ? '🔔' : '🔕';
-  btn.title       = on ? 'Notifications ON — tap to manage' : 'Enable task notifications';
-  btn.style.background   = on ? 'rgba(107,203,119,0.25)' : 'rgba(255,255,255,0.18)';
-  btn.style.borderColor  = on ? 'rgba(107,203,119,0.5)'  : 'rgba(255,255,255,0.4)';
+  const on=s.enabled&&('Notification' in window)&&Notification.permission==='granted';
+  btn.textContent=on?'🔔':'🔕';
+  btn.title=on?'Notifications ON — tap to manage':'Enable task notifications';
+  btn.style.background=on?'rgba(107,203,119,0.25)':'rgba(255,255,255,0.18)';
+  btn.style.borderColor=on?'rgba(107,203,119,0.5)':'rgba(255,255,255,0.4)';
 }
 
-/* ── Fire a notification ──
-   Tries SW.showNotification first (works in background),
-   falls back to new Notification() (foreground only) ── */
-async function fireNotification(title, body, tag){
-  if(!('Notification' in window)) return;
-  if(Notification.permission !== 'granted') return;
-  const icon = window.APP_ICON_URL || document.getElementById('appleIcon')?.href || '';
-
-  // Check SW is active and ready
-  const sw = swRegistration?.active
-    ? swRegistration
-    : (await navigator.serviceWorker?.getRegistration?.('./') || null);
-
-  if(sw){
-    try{
-      await sw.showNotification(title, {
-        body, tag, icon, badge: icon,
-        renotify: true,
-        vibrate:  [200, 100, 200],
-        requireInteraction: false,
-      });
-      return;
-    } catch(e){ /* fall through */ }
-  }
-  // Fallback — only works when page is visible
-  try{ new Notification(title, { body, tag, icon }); } catch(e){}
-}
-
-/* ── Send task list to SW for background processing ── */
-function postTasksToSW(){
-  const s = getNotifSettings();
-  if(!s.enabled || Notification.permission !== 'granted') return;
-
-  const now     = nowGMT8();
-  const today   = toDateStrGMT8(now);
-  const nowMins = now.getHours()*60 + now.getMinutes();
-  const icon    = window.APP_ICON_URL || document.getElementById('appleIcon')?.href || '';
-  const r       = getRoutine();
-
-  const tasks = tasksForDate(today).map(t => ({
-    ...t,
-    petName: t.petId==='all' ? 'All Cats'
-             : (state.pets.find(p=>String(p.id)===String(t.petId))?.name || 'All Cats'),
-  }));
-
-  // Message the SW — it will check and fire notifications
-  if(navigator.serviceWorker?.controller){
-    navigator.serviceWorker.controller.postMessage({
-      type: 'CHECK_TASKS',
-      tasks, nowMins, today, minutesBefore: s.minutesBefore||5,
-      done: r.done, iconUrl: icon,
-    });
-  }
-}
-
-/* ── Check due tasks every minute (foreground fallback) ── */
 function checkDueTaskNotifications(){
-  const s = getNotifSettings();
-  if(!s.enabled || Notification.permission !== 'granted') return;
-
-  const now     = nowGMT8();
-  const today   = toDateStrGMT8(now);
-  const nowMins = now.getHours()*60 + now.getMinutes();
-  const before  = s.minutesBefore || 5;
-
-  // Also send to SW for background coverage
+  const s=getNotifSettings();
+  if(!s.enabled||!('Notification' in window)||Notification.permission!=='granted') return;
   postTasksToSW();
-
-  tasksForDate(today).forEach(t => {
+  const now=nowGMT8(), today=toDateStrGMT8(now);
+  const nowMins=now.getHours()*60+now.getMinutes(), before=s.minutesBefore||5;
+  tasksForDate(today).forEach(t=>{
     if(!t.time) return;
-    const [tH,tM]  = t.time.split(':').map(Number);
-    const taskMins = tH*60 + tM;
-    const diff     = taskMins - nowMins;
-    const petName  = t.petId==='all' ? 'All Cats'
-                     : (state.pets.find(p=>String(p.id)===String(t.petId))?.name || 'All Cats');
-
-    if(diff>=0 && diff<=1){
-      const k = `${today}:${t.id}:now`;
-      if(!notifLastFired[k] && !isDone(today,t.id)){
-        notifLastFired[k] = Date.now();
-        fireNotification(`${t.emoji||'🐾'} ${t.name}`, `⏰ Due now  ·  ${petName}`, `mfw-now-${t.id}`);
+    const [tH,tM]=t.time.split(':').map(Number);
+    const diff=tH*60+tM-nowMins;
+    const petName=t.petId==='all'?'All Cats':(state.pets.find(p=>String(p.id)===String(t.petId))?.name||'All Cats');
+    if(diff>=0&&diff<=1){
+      const k=`${today}:${t.id}:now`;
+      if(!notifLastFired[k]&&!isDone(today,t.id)){
+        notifLastFired[k]=Date.now();
+        try{ new Notification(`${t.emoji||'🐾'} ${t.name}`,{body:`⏰ Due now  ·  ${petName}`,icon:window.APP_ICON_URL||'',tag:`mfw-now-${t.id}`}); }catch(e){}
       }
     }
-    if(before>0 && diff===before){
-      const k = `${today}:${t.id}:remind`;
-      if(!notifLastFired[k] && !isDone(today,t.id)){
-        notifLastFired[k] = Date.now();
-        fireNotification(`⏰ In ${before} min: ${t.name}`, `${t.emoji||'🐾'} ${petName}  ·  at ${t.time}`, `mfw-remind-${t.id}`);
+    if(before>0&&diff===before){
+      const k=`${today}:${t.id}:remind`;
+      if(!notifLastFired[k]&&!isDone(today,t.id)){
+        notifLastFired[k]=Date.now();
+        try{ new Notification(`⏰ In ${before} min: ${t.name}`,{body:`${t.emoji||'🐾'} ${petName}  ·  at ${t.time}`,icon:window.APP_ICON_URL||'',tag:`mfw-remind-${t.id}`}); }catch(e){}
       }
     }
   });
-
-  // Clean up entries older than 24h
-  const cut = Date.now() - 86400000;
-  Object.keys(notifLastFired).forEach(k=>{ if(notifLastFired[k]<cut) delete notifLastFired[k]; });
+  const cut=Date.now()-86400000;
+  Object.keys(notifLastFired).forEach(k=>{if(notifLastFired[k]<cut)delete notifLastFired[k];});
 }
 
-/* ── Notification settings modal ── */
 function openNotifSettings(){
-  const s   = getNotifSettings();
-  const sel = document.getElementById('notifMinutesBefore');
-  if(sel) sel.value = String(s.minutesBefore||5);
-
-  const on  = s.enabled && ('Notification' in window) && Notification.permission==='granted';
-  const tog = document.getElementById('notifEnabledToggle');
-  if(tog) tog.checked = on;
+  const s=getNotifSettings(), on=s.enabled&&('Notification' in window)&&Notification.permission==='granted';
+  const sel=document.getElementById('notifMinutesBefore'); if(sel) sel.value=String(s.minutesBefore||5);
+  const tog=document.getElementById('notifEnabledToggle'); if(tog) tog.checked=on;
   updateToggleSlider(on);
-
-  // Status banner
-  const banner = document.getElementById('notifStatusBanner');
-  if(banner){
-    if(!('Notification' in window)){
-      banner.textContent = '❌ Your browser does not support notifications';
-      banner.style.cssText = 'background:#FFE8E8;color:#FF4757;border-radius:14px;padding:12px 14px;margin-bottom:16px;font-family:Baloo 2,cursive;font-size:13px;font-weight:700;text-align:center;';
-    } else if(Notification.permission==='denied'){
-      banner.textContent = '⚠️ Blocked — go to Settings → Browser → Notifications to allow';
-      banner.style.cssText = 'background:#FFF3B0;color:#9A7000;border-radius:14px;padding:12px 14px;margin-bottom:16px;font-family:Baloo 2,cursive;font-size:13px;font-weight:700;text-align:center;';
-    } else if(on){
-      banner.textContent = '✅ Notifications are active';
-      banner.style.cssText = 'background:var(--mint-light);color:#2A7A34;border-radius:14px;padding:12px 14px;margin-bottom:16px;font-family:Baloo 2,cursive;font-size:13px;font-weight:700;text-align:center;';
-    } else {
-      banner.textContent = '🔕 Notifications are off';
-      banner.style.cssText = 'background:var(--lavender-light);color:var(--lavender-deep);border-radius:14px;padding:12px 14px;margin-bottom:16px;font-family:Baloo 2,cursive;font-size:13px;font-weight:700;text-align:center;';
-    }
+  const b=document.getElementById('notifStatusBanner');
+  const hasVapid=FCM_VAPID_KEY!=='BHFXWQ1_8gs4KvFVTzTbD9jFFtvB7Q2phR11O1Rwyi8TFbWdjFyhjBD_ZOjIZ0LK5TpZTo-zhT7UrMwTiSK8_Ms';
+  if(b){
+    let txt,css;
+    if(!('Notification' in window)){ txt='❌ Browser does not support notifications'; css='background:#FFE8E8;color:#FF4757;'; }
+    else if(Notification.permission==='denied'){ txt='⚠️ Blocked — enable in Settings:<br><small>iPhone: Settings → Safari → Notifications → Allow<br>Android: Settings → Apps → Chrome → Notifications → Allow</small>'; css='background:#FFF3B0;color:#9A7000;'; }
+    else if(on&&fcmToken&&hasVapid){ txt='✅ FCM active — background notifications work!'; css='background:var(--mint-light);color:#2A7A34;'; }
+    else if(on&&!hasVapid){ txt='⚠️ Foreground only — add VAPID key to the code for background'; css='background:#FFF3B0;color:#9A7000;'; }
+    else if(on){ txt='🔔 ON (foreground only)'; css='background:var(--sky-light);color:#0A6B9D;'; }
+    else{ txt='🔕 Notifications are off'; css='background:var(--lavender-light);color:var(--lavender-deep);'; }
+    b.innerHTML=txt;
+    b.style.cssText=css+'border-radius:14px;padding:12px 14px;margin-bottom:16px;font-family:Baloo 2,cursive;font-size:13px;font-weight:700;text-align:center;';
   }
   document.getElementById('modal-notifSettings').classList.add('open');
 }
-
 function updateToggleSlider(on){
-  const slider = document.getElementById('notifToggleSlider');
-  const knob   = document.getElementById('notifToggleKnob');
-  if(slider) slider.style.background = on ? 'var(--mint)' : '#ccc';
-  if(knob)   knob.style.transform    = on ? 'translateX(22px)' : 'translateX(0)';
+  const s=document.getElementById('notifToggleSlider'),k=document.getElementById('notifToggleKnob');
+  if(s) s.style.background=on?'var(--mint)':'#ccc';
+  if(k) k.style.transform=on?'translateX(22px)':'translateX(0)';
 }
-
-async function handleNotifToggleChange(checkbox){
-  updateToggleSlider(checkbox.checked);
-  await toggleNotifications();
-  // Reopen to refresh status
-  setTimeout(openNotifSettings, 400);
-}
-
+async function handleNotifToggleChange(cb){ updateToggleSlider(cb.checked); await toggleNotifications(); setTimeout(openNotifSettings,600); }
 function saveNotifSettingsFromModal(){
-  const s   = getNotifSettings();
-  const sel = document.getElementById('notifMinutesBefore');
-  if(sel) s.minutesBefore = parseInt(sel.value)||5;
+  const s=getNotifSettings(),sel=document.getElementById('notifMinutesBefore');
+  if(sel) s.minutesBefore=parseInt(sel.value)||5;
   saveNotifSettings(s);
   document.getElementById('modal-notifSettings').classList.remove('open');
-  showBiometricToast('💾 Notification settings saved!');
+  showBiometricToast('💾 Settings saved!');
 }
 
-/* ── Init on app start ── */
 async function initNotifications(){
-  const s = getNotifSettings();
-  if(s.enabled && ('Notification' in window) && Notification.permission==='granted'){
-    await registerSW();
-  }
+  await registerFCMServiceWorker();
+  await initFCM();
   updateNotifToggleUI();
   checkDueTaskNotifications();
 }
+
 </script>
 </body>
 </html>
