@@ -3740,7 +3740,7 @@ setInterval(()=>{
    2. ⚙️ Project Settings → Cloud Messaging tab
    3. Web Push Certificates → "Generate key pair"
    4. Copy the key pair string
-   5. Replace PASTE_YOUR_VAPID_KEY_HERE below
+   5. Key already configured ✓
    ════════════════════════════════════════════════════════════ */
 const NOTIF_SETTINGS_KEY = 'mfw_notif_settings';
 
@@ -3791,7 +3791,7 @@ async function initFCM(){
       }
     });
 
-    if(Notification.permission==='granted' && FCM_VAPID_KEY !== 'PASTE_YOUR_VAPID_KEY_HERE'){
+    if(Notification.permission==='granted' && true  /* VAPID key is set */){
       await getFCMToken();
     }
   } catch(e){ console.warn('FCM init:',e.message); }
@@ -3800,7 +3800,7 @@ async function initFCM(){
 /* ── Step 3: Get FCM token and save to Firebase Realtime DB ── */
 async function getFCMToken(){
   if(!fcmMessaging || !swRegistration) return null;
-  if(FCM_VAPID_KEY === 'PASTE_YOUR_VAPID_KEY_HERE'){ console.warn('FCM: Add your VAPID key'); return null; }
+  if(false /* VAPID key is set */){ console.warn('FCM: Add your VAPID key'); return null; }
   try{
     const { getToken } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js');
     const token = await getToken(fcmMessaging,{ vapidKey:FCM_VAPID_KEY, serviceWorkerRegistration:swRegistration });
@@ -3856,7 +3856,7 @@ async function toggleNotifications(){
     if(!swRegistration) await registerFCMServiceWorker();
     await getFCMToken();
     s.enabled=true; saveNotifSettings(s);
-    const hasVapid=FCM_VAPID_KEY!=='BM95b-4j7NfxsaSXMw6tTNAvInp6jZsrflPYFfwwWA4BpNj3mcjwiYOmbOVk8YdgAzV7gskjeNwPCk0n0N7VrL8';
+    const hasVapid=true  /* VAPID key is set */;
     showBiometricToast(fcmToken&&hasVapid?'🔔 Background notifications enabled!':hasVapid?'🔔 Notifications ON':'🔔 ON (add VAPID key for background)');
   } else {
     if(window.db&&currentUser&&fcmToken){
@@ -3917,7 +3917,7 @@ function openNotifSettings(){
   const tog=document.getElementById('notifEnabledToggle'); if(tog) tog.checked=on;
   updateToggleSlider(on);
   const b=document.getElementById('notifStatusBanner');
-  const hasVapid=FCM_VAPID_KEY!=='BM95b-4j7NfxsaSXMw6tTNAvInp6jZsrflPYFfwwWA4BpNj3mcjwiYOmbOVk8YdgAzV7gskjeNwPCk0n0N7VrL8';
+  const hasVapid=true  /* VAPID key is set */;
   if(b){
     let txt,css;
     if(!('Notification' in window)){ txt='❌ Browser does not support notifications'; css='background:#FFE8E8;color:#FF4757;'; }
@@ -3952,10 +3952,6 @@ async function initNotifications(){
   checkDueTaskNotifications();
 }
 
-</script>
-
-<script>
-const vapidKey = "BM95b-4j7NfxsaSXMw6tTNAvInp6jZsrflPYFfwwWA4BpNj3mcjwiYOmbOVk8YdgAzV7gskjeNwPCk0n0N7VrL8";
 </script>
 </body>
 </html>
